@@ -362,6 +362,34 @@ router.post(
   }
 );
 
+// MODIFY PRODUCT INFO BY SELLER
+router.put('/sellers/:sellerId/products/:productId', async (req, res) => {
+    const { sellerId, productId } = req.params;
+    const { sellerPrice, stock } = req.body;
+
+    try {
+        const product = await Product.findById(productId);
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+
+        const sellerProduct = product.sellerProducts.find(sp => sp.seller.toString() === sellerId);
+        if (!sellerProduct) {
+            return res.status(404).json({ message: 'Seller does not sell this product' });
+        }
+
+        // Update the seller's product details
+        sellerProduct.price = sellerPrice || sellerProduct.price;
+        sellerProduct.stock = stock || sellerProduct.stock;
+
+        await product.save();
+        res.status(200).json({ message: 'Product information updated successfully', product });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
 // API TO DELETE A PRODUCT;
 router.delete("/sellers/:sellerId/products/:productId", async (req, res) => {
   const { sellerId, productId } = req.params;
