@@ -24,24 +24,37 @@ router.post('/orders', async (req, res) => {
             return res.status(404).json({ message: 'Product not found' });
         }
 
+        // Find the product for the specific seller
         const sellerProduct = product.sellerProducts.find(sp => sp.seller.toString() === sellerId);
         if (!sellerProduct) {
             return res.status(404).json({ message: 'Seller not selling this product' });
         }
 
-        const totalPrice = quantity * sellerProduct.price;
+        // Check if there's enough stock
+        if (sellerProduct.stock < quantity) {
+            return res.status(400).json({ message: 'Not enough stock available' });
+        }
 
+        // Generate the next invoice number
         const invoiceNumber = await getNextInvoiceNumber();
 
+        const totalPrice = quantity * sellerProduct.price;
+
+        // Create a new order
         const order = new Order({
             consumer: consumerId,
             seller: sellerId,
             product: productId,
             quantity: quantity,
             totalPrice: totalPrice,
-            invoiceNumber: invoiceNumber,
+            invoiceNumber: invoiceNumber
         });
 
+        // Decrement stock
+        sellerProduct.stock -= quantity;
+
+        // Save the updated product and the new order
+        await product.save();
         await order.save();
 
         res.status(201).json({
@@ -53,6 +66,7 @@ router.post('/orders', async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 });
+
 
 
 router.get('/orders', async (req, res) => {
