@@ -25,6 +25,7 @@ const categoryRoutes = require('./src/routes/category');
 const orderRoutes = require('./src/routes/orders');
 const sellerRoutes = require('./src/routes/seller');
 const cartRoutes = require('./src/routes/cart');
+const reviewRoutes = require('./src/routes/reviews');
 
 app.use(`${api}`, accountRoutes);
 app.use(`${api}`, productRoutes);
@@ -32,6 +33,7 @@ app.use(`${api}`, categoryRoutes);
 app.use(`${api}`, orderRoutes);
 app.use(`${api}`, sellerRoutes);
 app.use(`${api}`, cartRoutes);
+app.use(`${api}`, reviewRoutes);
 
 
 mongoose.connect(process.env.MONGO_CONNECTION_STRING, {
