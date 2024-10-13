@@ -247,9 +247,7 @@ router.get("/products/category/:categoryId", async (req, res) => {
 });
 
 // API to add a product for a seller
-router.post(
-  "/sellers/:sellerId/products",
-  uploadOptions.single("images"),
+router.post("/sellers/:sellerId/products", uploadOptions.single("images"),
   async (req, res) => {
     const { sellerId } = req.params;
     const {
