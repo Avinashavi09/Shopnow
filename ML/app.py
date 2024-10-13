@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify, send_file
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 import pickle
 import pandas as pd
 import shap
@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import os
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}})
 
 # Load the trained model and polynomial features
 with open('trained_model.pkl', 'rb') as model_file:
@@ -56,6 +56,8 @@ def predict():
 @app.route('/shap_graph', methods=['GET'])
 def shap_graph():
     try:
+        # response = flask.jsonify({'data': 'hello'})
+        # return response
         # Load your dataset
         df = pd.read_csv('synthetic_ecommerce_dataset.csv')
 
@@ -98,7 +100,10 @@ def shap_graph():
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
+@app.route('/', methods=['GET'])
+def index():
+    return jsonify('Hello')
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(port=8000,debug=True)

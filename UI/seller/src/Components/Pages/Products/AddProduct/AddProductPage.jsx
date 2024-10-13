@@ -95,7 +95,7 @@ const MainBody = ({data, setData}) => {
   //     "Competitor Price-Rating Ratio": 166.66
   // }
   console.log(modelData)
-    const response = await axios.post(`http://127.0.0.1:5000/predict`, modelData);
+    const response = await axios.post(`http://127.0.0.1:8000/predict`, modelData);
     fetchShapGraph();
     console.log(response.data.predicted_price)
     setPredictedPrice(response.data.predicted_price)
@@ -103,9 +103,10 @@ const MainBody = ({data, setData}) => {
   }
   const fetchShapGraph = async () => {
     try {
+      console.log("I am here")
       const response = await axios({
-        url: 'http://localhost:5000/shap_graph',
         method: 'GET',
+        url: `http://localhost:8000/shap_graph`,
         responseType: 'blob', // Important to specify response type as blob
       });
   
@@ -126,7 +127,7 @@ const MainBody = ({data, setData}) => {
         <DialogTitle>VSHOP AI</DialogTitle>
         <DialogContent>
           <h1>Best Sale Price is: {predictedPrice}</h1>
-          <img src={shapImage}></img>
+          <img src={shapImage} alt="img"></img>
         </DialogContent>
         <DialogActions>
           <Button onClick={()=>{setDialogOpen(false)}}>Cancel</Button>
