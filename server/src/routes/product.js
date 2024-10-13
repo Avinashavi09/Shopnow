@@ -2,7 +2,35 @@ const express = require('express');
 const {Category} = require('../models/Category/Category');
 const { Product } = require('../models/Product/Product');
 const { Seller } = require('../models/Seller/Seller');
+const multer = require('multer');
 const router = express.Router();
+
+
+const FILE_TYPE_MAP = {
+    'image/png': 'png',
+    'image/jpeg': 'jpeg',
+    'image/jpg': 'jpg'
+}
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        const isValid = FILE_TYPE_MAP[file.mimetype];
+        let uploadError = new Error('invalid image type');
+
+        if(isValid) {
+            uploadError = null
+        }
+      cb(uploadError, 'public/uploads')
+    },
+    filename: function (req, file, cb) {
+        
+      const fileName = file.originalname.split(' ').join('-');
+      const extension = FILE_TYPE_MAP[file.mimetype];
+      cb(null, `${fileName}-${Date.now()}.${extension}`)
+    }
+  });
+  
+const uploadOptions = multer({ storage: storage })
 
 // API to retrieve sellers for a specific product
 router.get('/products/:productId/sellers', async (req, res) => {
@@ -35,8 +63,50 @@ router.get('/products/:productId/sellers', async (req, res) => {
     }
 });
 
+// GET A PRODUCT FOR GIVEN SELLER
+router.get('/products/:productId/sellers/:sellerId', async (req, res) => {
+    const { productId, sellerId } = req.params;
 
-router.get('/seller/:sellerId/products', async (req, res) => {
+    try {
+        // Find the product by productId
+        const product = await Product.findById(productId).populate('sellerProducts.seller');
+        
+        // Check if the product exists
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+
+        // Check if the seller exists in the product's sellerProducts
+        const sellerProduct = product.sellerProducts.find(sp => sp.seller._id.toString() === sellerId);
+        
+        if (!sellerProduct) {
+            return res.status(404).json({ message: 'Seller not selling this product' });
+        }
+
+        // Return the specific product details for the seller
+        res.status(200).json({
+            product: {
+                name: product.name,
+                category: product.category,
+                description: product.description,
+                seller: {
+                    sellerId: sellerProduct.seller._id,
+                    price: sellerProduct.price,
+                    stock: sellerProduct.stock,
+                    images: sellerProduct.images,
+                    mrp: product.mrp,
+                    purchasePrice: product.purchasePrice
+                }
+            }
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// API TO GET ALL PRODUCTS OF A GIVEN SELLER
+router.get('/sellers/:sellerId/products', async (req, res) => {
     const { sellerId } = req.params;
 
     try {
@@ -75,12 +145,25 @@ router.get('/seller/:sellerId/products', async (req, res) => {
     }
 });
 
+
+
+
+
+
+
+
+
 // API to add a product for a seller
-router.post('/seller/:sellerId/products', async (req, res) => {
+router.post('/sellers/:sellerId/products', uploadOptions.single('images'), async (req, res) => {
     const { sellerId } = req.params;
-    console.log(sellerId)
-    const { productName, category, mrp, description, sellerPrice, stock, purchasePrice } = req.body;
-    console.log(req.body)
+    const { productName, category, description, sellerPrice, stock, mrp, purchasePrice } = req.body;
+    
+    // Use req.file to get the uploaded file
+    const file = req.file;
+    if (!file) return res.status(400).send('No image in the request');
+
+    const fileName = file.filename; // Multer stores the file in req.file, not req.body
+    const basePath = `${req.protocol}://${req.get('host')}/public/uploads/`;
 
     try {
         // Find the seller by ID
@@ -89,69 +172,30 @@ router.post('/seller/:sellerId/products', async (req, res) => {
             return res.status(404).json({ message: 'Seller not found' });
         }
 
-        // Check if the category exists
-        const categoryObj = await Category.findById(category);
-        if (!categoryObj) {
-            return res.status(404).json({ message: 'Category not found' });
-        }
-
-        // Check if the product already exists in the Product collection
-        let product = await Product.findOne({ name: productName, category: category });
-
-        if (!product) {
-            // If product does not exist, create a new product
-            product = new Product({
-                name: productName,
-                category: categoryObj._id,  // Reference the category's ObjectId
-                mrp: mrp,
-                description: description,
-                globalRating: 0, // Initial rating for a new product
-                sellerProducts: []
-            });
-
-            await product.save();
-        }
-
-        // Check if the seller is already associated with the product
-        const sellerProduct = product.sellerProducts.find(
-            sp => sp.seller.toString() === sellerId
-        );
-
-        if (sellerProduct) {
-            return res.status(400).json({ message: 'Seller is already selling this product' });
-        }
-
-        // Add seller-specific product details
-        product.sellerProducts.push({
-            seller: sellerId,
-            sellerRating: 0, // Initial rating for the seller's product
-            price: sellerPrice,
-            stock: stock,
+        // Create the new product object
+        const newProduct = new Product({
+            name: productName,
+            category: category,
+            description: description,
+            mrp: mrp,
             purchasePrice: purchasePrice,
+            sellerProducts: [{
+                seller: sellerId,
+                price: sellerPrice,
+                stock: stock,
+                images: `${basePath}${fileName}`, // Save the image path
+            }]
         });
 
-        // Save the product with the new seller's details
-        await product.save();
-
-        // Update the seller's product list
-        seller.products.push({
-            product: product._id,
-            price: sellerPrice,
-            rating: 0, // Initial rating for the seller's product
-            stock: stock
-        });
-
-        await seller.save();
-
-        res.status(201).json({
-            message: 'Product added successfully for the seller',
-            product: product
-        });
+        // Save the product
+        const savedProduct = await newProduct.save();
+        res.status(201).json({ message: 'Product added successfully', product: savedProduct });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error' });
     }
 });
+
 
 // API to add a review for a product sold by a specific seller
 router.post('/products/:productId/sellers/:sellerId/reviews', async (req, res) => {
