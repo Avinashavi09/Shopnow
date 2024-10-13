@@ -225,6 +225,7 @@ router.get("/products/category/:categoryId", async (req, res) => {
         allProducts.push({
           id: product._id,
           name: product.name,
+          description: product.description,
           category: product.category.name,
           mrp: product.mrp,
           seller: sellerProduct.seller._id,
@@ -235,6 +236,7 @@ router.get("/products/category/:categoryId", async (req, res) => {
           numReviews: sellerProduct.numReviews,
           status: sellerProduct.status,
           published: product.published,
+          image: sellerProduct ? sellerProduct.images[0] : '',
         });
       });
     });
