@@ -230,9 +230,10 @@ router.get("/products/category/:categoryId", async (req, res) => {
           mrp: product.mrp,
           seller: sellerProduct.seller._id,
           sellerName: sellerProduct.seller.name, // Assuming seller has a 'name' field
+          sellerRating: sellerProduct.sellerRating,
           price: sellerProduct.price,
           stock: sellerProduct.stock,
-          sellerRating: sellerProduct.sellerRating,
+          sellerRating: (Math.round(sellerProduct.sellerRating * 100) / 100).toFixed(2),
           numReviews: sellerProduct.numReviews,
           status: sellerProduct.status,
           published: product.published,
