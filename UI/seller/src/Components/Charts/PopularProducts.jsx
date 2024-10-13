@@ -73,7 +73,7 @@ const PopularProducts = () => {
 						<div className="w-10 h-10 min-w-[2.5rem] bg-gray-200 rounded-sm">
 							<img
 								className="w-full h-full object-cover rounded-sm"
-								src={product.product_thumbnail}
+								src={product.image}
 								alt={product.name}
 							/>
 						</div>

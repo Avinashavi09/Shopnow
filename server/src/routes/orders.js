@@ -119,7 +119,8 @@ router.get('/sellers/:sellerId/orders', async(req,res)=>{
         const allOrders = await Order.find({ 'seller': sellerId })
             .sort({ orderDate: -1 })  // Sort by orderDate in descending order
             .populate('consumer', 'name email') // Populating consumer details if needed
-            .populate('seller', 'name'); // Populating seller details if needed
+            .populate('seller', 'name') // Populating seller details if needed
+            .populate('product', 'name');
 
         if (!allOrders || allOrders.length === 0) {
             return res.status(404).json({ message: 'No recent orders found for this seller' });
