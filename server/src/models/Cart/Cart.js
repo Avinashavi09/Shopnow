@@ -17,6 +17,10 @@ const cartSchema = new mongoose.Schema({
             ref: 'Seller', // Add sellerId reference to the cart item
             required: true,
         },
+        salePrice:{
+            type: Number,
+            required: true,
+        },
         quantity: {
             type: Number,
             required: true,

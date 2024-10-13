@@ -24,12 +24,14 @@ app.use('/public/uploads', express.static(__dirname + '/public/uploads'));
 // const categoryRoutes = require('./src/routes/category');
 // const orderRoutes = require('./src/routes/orders');
 // const sellerRoutes = require('./src/routes/seller');
+const cartRoutes = require('./src/routes/cart');
 
 // app.use(`${api}`, accountRoutes);
 // app.use(`${api}`, productRoutes);
 // app.use(`${api}`, categoryRoutes);
 // app.use(`${api}`, orderRoutes);
 // app.use(`${api}`, sellerRoutes);
+app.use(`${api}`, cartRoutes);
 app.use('/', (req,res)=>{
     res.send('Hello')
 })
