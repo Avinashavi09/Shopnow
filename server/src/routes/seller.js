@@ -33,7 +33,8 @@ router.get('/sellers/:sellerId/popular-products', async (req, res) => {
                 globalRating: product.globalRating,
                 price: sellerProductDetails.price,
                 stock: sellerProductDetails.stock,
-                numReviews: sellerProductDetails.numReviews
+                numReviews: sellerProductDetails.numReviews,
+                image: sellerProductDetails.images[0]
             };
         });
 
