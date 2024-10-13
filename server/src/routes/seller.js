@@ -73,5 +73,32 @@ router.get('/sellers/:sellerId/recent-orders/:quantity', async (req, res) => {
     }
 });
 
+// GET ALL CUSTOMERS FOR A SPECIFIC SELLER
+router.get('/sellers/:sellerId/customers', async (req, res) => {
+    const { sellerId } = req.params;
+
+    try {
+        // Find all orders by the seller and select only the 'consumer' field
+        const orders = await Order.find({ seller: sellerId }).select('consumer').populate('consumer', 'name email').lean();
+
+        // Use a Set to get unique consumers
+        const uniqueCustomers = [...new Map(orders.map(order => [order.consumer._id.toString(), order.consumer])).values()];
+
+        if (uniqueCustomers.length === 0) {
+            return res.status(404).json({ message: 'No customers found for this seller' });
+        }
+
+        res.status(200).json({
+            message: `Customers found for seller ${sellerId}`,
+            customers: uniqueCustomers
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+
+
 
 module.exports =router;
