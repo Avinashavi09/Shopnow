@@ -1,7 +1,6 @@
 const express = require("express");
-const { Category } = require("../models/Category/Category");
+const { Consumer } = require("../models/Consumer/Consumer");
 const { Product } = require("../models/Product/Product");
-const { Seller } = require("../models/Seller/Seller");
 const multer = require("multer");
 const router = express.Router();
 
@@ -32,6 +31,54 @@ router.get('/products/:productId/sellers/:sellerId/reviews', async (req, res) =>
         res.status(500).json({ message: 'Server error' });
     }
 });
+
+// API to add a review for a product sold by a specific seller
+router.post('/products/:productId/sellers/:sellerId/reviews', async (req, res) => {
+    const { productId, sellerId } = req.params;
+    const { consumerId, rating, comment } = req.body;
+
+    try {
+        // Find the product by ID
+        const product = await Product.findById(productId);
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+
+        // Find the seller's specific product in the sellerProducts array
+        const sellerProduct = product.sellerProducts.find(sp => sp.seller.toString() === sellerId);
+        if (!sellerProduct) {
+            return res.status(404).json({ message: 'Seller for this product not found' });
+        }
+
+        // Check if the consumer exists
+        const consumer = await Consumer.findById(consumerId);
+        if (!consumer) {
+            return res.status(404).json({ message: 'Consumer not found' });
+        }
+
+        // Add the review to the seller's product
+        const review = {
+            consumer: consumerId,
+            rating,
+            comment
+        };
+        sellerProduct.reviews.push(review);
+        sellerProduct.numReviews += 1;
+
+        // Update the seller rating based on the average of reviews
+        const totalRating = sellerProduct.reviews.reduce((acc, review) => acc + review.rating, 0);
+        sellerProduct.sellerRating = totalRating / sellerProduct.numReviews;
+
+        // Save the updated product document
+        await product.save();
+
+        res.status(201).json({ message: 'Review added successfully', product });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
 
 // MODIFY CUSTOMER REVIEW
 router.put('/products/:productId/seller/:sellerId/reviews/:reviewId', async (req, res) => {
