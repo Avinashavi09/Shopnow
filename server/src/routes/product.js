@@ -145,6 +145,51 @@ router.get('/sellers/:sellerId/products', async (req, res) => {
     }
 });
 
+// Flattened API to Get Products by Category (with at least 1 seller)
+router.get('/products/category/:categoryId', async (req, res) => {
+    const { categoryId } = req.params;
+
+    try {
+        // Fetch products with at least one seller in the specified category
+        const products = await Product.find({ 
+            category: categoryId, 
+            sellerProducts: { $exists: true, $not: { $size: 0 } } 
+        }).populate('category').populate('sellerProducts.seller');
+
+        if (products.length === 0) {
+            return res.status(404).json({ message: 'No products found for this category' });
+        }
+
+        // Flatten the products based on sellerProducts
+        let allProducts = [];
+
+        products.forEach(product => {
+            product.sellerProducts.forEach(sellerProduct => {
+                allProducts.push({
+                    id: product._id,
+                    name: product.name,
+                    category: product.category.name,
+                    mrp: product.mrp,
+                    seller: sellerProduct.seller._id,
+                    sellerName: sellerProduct.seller.name, // Assuming seller has a 'name' field
+                    price: sellerProduct.price,
+                    stock: sellerProduct.stock,
+                    sellerRating: sellerProduct.sellerRating,
+                    numReviews: sellerProduct.numReviews,
+                    status: sellerProduct.status,
+                    published: product.published
+                });
+            });
+        });
+
+        res.status(200).json({ allProducts });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+
 
 
 
