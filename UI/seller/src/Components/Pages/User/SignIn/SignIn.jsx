@@ -1,3 +1,4 @@
+import GoogleLoginComponent from "./GoogleLoginComponent"
 
 const SignIn = () => {
   return (
@@ -47,6 +48,7 @@ const SignIn = () => {
                             className="h-[18px] w-[18px] "/>
                                 Continue with Google
                     </button>
+                    <GoogleLoginComponent/>
 
 
                     <button

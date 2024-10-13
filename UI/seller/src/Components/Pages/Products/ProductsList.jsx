@@ -29,7 +29,7 @@ const updateData = (newRow, oldRow) => {
   console.log(updatedData);
   const updateOrder = async (productId, updatedData) => {
     try {
-      const response = await axios.put(`http://localhost:3000/api/v1/seller/${sellerId}/products/${productId}`, updatedData);
+      const response = await axios.put(`http://localhost:3000/api/v1/sellers/${sellerId}/products/${productId}`, updatedData);
       console.log('Order updated successfully:', response.data);
     } catch (error) {
       console.error('Error updating order:', error.response ? error.response.data : error.message);
@@ -71,7 +71,7 @@ const ProductsList = ({selectedRows, setSelectedRows, isSubmitClicked, apiRef, d
     const fetchProducts = async () => {
       try {
         // Call the API to get all products for a seller
-        const response = await axios.get(`http://localhost:3000/api/v1/seller/${sellerId}/products`);
+        const response = await axios.get(`http://localhost:3000/api/v1/sellers/${sellerId}/products`);
         setProducts(response.data.products); // Assuming the API returns products under 'products'
         setLoading(false);
         setDeletingProduct(false);

@@ -120,8 +120,48 @@ router.get('/auth/google/callback',
     }
 );
 
-// Google login route
-router.post('/auth/google', async (req, res) => {
+// Google seller login route
+router.post('/seller/auth/google', async (req, res) => {
+    const { credential } = req.body;
+    console.log("I am here")
+
+    try {
+        // Verify the token
+        const ticket = await client.verifyIdToken({
+            idToken: credential,
+            audience: process.env.GOOGLE_CLIENT_ID, // Specify the CLIENT_ID of the app that accesses the backend
+        });
+
+        const payload = ticket.getPayload();
+        const { email, sub: googleId, name, picture } = payload;
+
+        // Check if the user is a Seller or Consumer
+        let user = await Seller.findOne({ email }) || await Consumer.findOne({ email });
+
+        if (!user) {
+            // If no user found, decide to create either Seller or Consumer based on your logic
+            user = new Seller({
+                name: name,
+                email: email,
+                googleId: googleId,
+                photo: picture,
+                authProvider: 'google',
+            });
+            await user.save();
+        }
+
+        // Now, generate a session or JWT token for the user and send it back
+        // For simplicity, we'll just return a success message here
+        res.status(200).json({ message: 'Seller Login successful', user });
+
+    } catch (err) {
+        console.error('Error during Google login:', err);
+        res.status(500).json({ message: 'Google Seller login failed' });
+    }
+});
+
+// Google consumer login route
+router.post('/consumer/auth/google', async (req, res) => {
     const { credential } = req.body;
 
     try {

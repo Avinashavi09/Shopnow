@@ -68,8 +68,8 @@ const OrdersList = () => {
     const fetchProducts = async () => {
       try {
         // Call the API to get all products for a seller
-        const response = await axios.get(`http://localhost:3000/api/v1/seller/${sellerId}/orders`);
-        const flattenedData = flattenOrderData(response.data.orders);
+        const response = await axios.get(`http://localhost:3000/api/v1/sellers/${sellerId}/orders`);
+        const flattenedData = flattenOrderData(response.data.allOrders);
         setRecentOrderData(flattenedData); // Assuming the API returns products under 'products'
         setLoading(false);
       } catch (err) {

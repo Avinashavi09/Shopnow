@@ -42,14 +42,13 @@ const Footer = ({addProduct, setAddingProduct}) => {
       </button>
     </div>
   );
-};
-const ImageDrop = () => {
-  const [file, setFile] = useState(null);
+}; 
+const ImageDrop = ({file, setFile, data, setData}) => { //TODO: IMAGE IS NOT GETTING STORED PROPER FORMATq;
   const label = file ? file : "Click or drop your file here";
   return (
     <div className="flex py-3 px-7 items-center border-slate-300">
       <h1 className="flex-1">Product Images</h1>
-      <StyledDropZone onDrop={setFile} label={label} className="flex-1 h-32 flex justify-center items-center p-3 rounded-md bg-inherit border-[1px]"/>
+      <StyledDropZone onDrop={(file)=>{console.log(file); setData({...data, images: file})}} label={label} className="flex-1 h-32 flex justify-center items-center p-3 rounded-md bg-inherit border-[1px]"/>
     </div>
   );
 };
@@ -58,6 +57,7 @@ const MainBody = ({data, setData}) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [predictedPrice, setPredictedPrice] = useState(0);
   const [shapImage, setShapImage] = useState(null);
+  const [file, setFile] = useState(null);
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -119,7 +119,7 @@ const MainBody = ({data, setData}) => {
   
 
   return (
-    <form id="mainbody" className="border-slate-300" onSubmit={(e)=>{e.preventDefault(); setData({'category': '6700dd4aa808b22f116b502d'})}}>
+    <form id="mainbody" className="border-slate-300" onSubmit={(e)=>{e.preventDefault();}}>
       <Dialog
       open={dialogOpen}
       >
@@ -155,7 +155,7 @@ const MainBody = ({data, setData}) => {
           onChange={(e)=>{setData({...data,'description': e.target.value});}}
         />
       </div>
-      <ImageDrop />
+      <ImageDrop file={file} setFile={setFile} daeta={data} setData={setData}/>
       {/* SKU */}
       <div className="flex py-3 px-7 items-center">
         <h1 className="flex-1">Product SKU</h1>
@@ -220,21 +220,22 @@ const MainBody = ({data, setData}) => {
 };
 
 const AddProductPage = ({ setAddingProduct, setIsSubmitClicked }) => {
-  const [data, setData] = useState({'category': '6700dd4aa808b22f116b502d'});
+  const [data, setData] = useState({});
   const sellerId = localStorage.getItem("sellerId");
   const addProduct = async () => {
     try {
       // Call the API to get all products for a seller
       setIsSubmitClicked(true);
       console.log(data)
-      await axios.post(`http://localhost:3000/api/v1/seller/${sellerId}/products/`, {
+      await axios.post(`http://localhost:3000/api/v1/sellers/${sellerId}/products/`, {
         productName: data.productName,
-        category: data.category,
+        category: data.category ? data.category : '6700dd4aa808b22f116b502d',
         mrp: data.mrp,
         description: data.description,
         purchasePrice: data.purchasePrice,
         sellerPrice: data.sellerPrice,
-        stock: data.stock
+        stock: data.stock,
+        images: data.images ? data.images: '',
       });
       const notify = () => toast("Product Added Successfully!");
       notify();

@@ -262,10 +262,12 @@ router.post("/sellers/:sellerId/products", uploadOptions.single("images"),
 
     // Use req.file to get the uploaded file
     const file = req.file;
-    if (!file) return res.status(400).send("No image in the request");
-
-    const fileName = file.filename; // Multer stores the file in req.file, not req.body
-    const basePath = `${req.protocol}://${req.get("host")}/public/uploads/`;
+    // if (!file) return res.status(400).send("No image in the request");
+    let basePath,fileName;
+    if(file){
+      fileName = file.filename; // Multer stores the file in req.file, not req.body
+      basePath = `${req.protocol}://${req.get("host")}/public/uploads/`;
+    }
 
     try {
       // Find the seller by ID

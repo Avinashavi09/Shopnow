@@ -112,6 +112,29 @@ router.get('/orders/:orderId', async (req, res) => {
     }
 });
 
+router.get('/sellers/:sellerId/orders', async(req,res)=>{
+    const { sellerId } = req.params;
+    try {
+        // Find orders where the seller matches the sellerId, sort by orderDate, and limit to 10
+        const allOrders = await Order.find({ 'seller': sellerId })
+            .sort({ orderDate: -1 })  // Sort by orderDate in descending order
+            .populate('consumer', 'name email') // Populating consumer details if needed
+            .populate('seller', 'name'); // Populating seller details if needed
+
+        if (!allOrders || allOrders.length === 0) {
+            return res.status(404).json({ message: 'No recent orders found for this seller' });
+        }
+
+        res.status(200).json({
+            message: `Orders found for seller ${sellerId}`,
+            allOrders: allOrders
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
 
 router.put('/orders/:orderId', async (req, res) => {
     const { orderId } = req.params;

@@ -14,7 +14,7 @@ const RecentOrders = () => {
       try {
         // Call the API to get all products for a seller
         const response = await axios.get(
-          `http://localhost:3000/api/v1/seller/${sellerId}/recent-orders`
+          `http://localhost:3000/api/v1/sellers/${sellerId}/recent-orders/8`
         );
         console.log(response.data.recentOrders);
         setRecentOrderData(response.data.recentOrders); // Assuming the API returns products under 'products'
