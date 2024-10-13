@@ -230,7 +230,7 @@ const AddProductPage = ({ setAddingProduct, setIsSubmitClicked }) => {
       console.log(data)
       await axios.post(`http://localhost:3000/api/v1/sellers/${sellerId}/products/`, {
         productName: data.productName,
-        category: data.category ? data.category : '6700dd4aa808b22f116b502d',
+        category: data.category ? data.category : '6700dd4aa808b22f116b502d', //Default Electronics;
         mrp: data.mrp,
         description: data.description,
         purchasePrice: data.purchasePrice,

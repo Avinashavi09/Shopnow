@@ -11,6 +11,9 @@ import classNames from "classnames";
 
 const Header = () => {
   const navigate = useNavigate();
+  const handleSignOut = () => {
+    //TODO: COMPLETE THIS FUNCTIONALITY;
+  }
 
   return (
     <div className="bg-white h-16 px-4 flex items-center border-b z-50 border-gray-200 justify-between">
@@ -155,6 +158,7 @@ const Header = () => {
                       active && "bg-gray-100",
                       "active:bg-gray-200 rounded-sm px-4 py-2 text-gray-700 cursor-pointer focus:bg-gray-200"
                     )}
+                    onClick={handleSignOut}
                   >
                     Sign out
                   </div>
