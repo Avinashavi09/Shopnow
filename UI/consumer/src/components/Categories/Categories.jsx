@@ -53,7 +53,7 @@ const responsive = {
 
 const Categories = () => {
   const [categories, setCategories] = useState([]);
-    const fetchCagtegories = async() => {
+    const fetchCategories = async() => {
       try{
         const response = await axios.get(`http://localhost:3000/api/v1/category/`);
         setCategories(response.data);
@@ -63,7 +63,7 @@ const Categories = () => {
       }
     }
     useEffect(() => {
-      fetchCagtegories();
+      fetchCategories();
     }, []);
     // console.log(categories);
   return (

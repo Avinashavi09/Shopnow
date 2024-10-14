@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react';
 import Products from './components/Products/Products';
 import Login from './components/Login/login';
 import UserProfile from './components/UserProfile/UserProfile';
+import CartMain from './components/Cart/CartMain';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -30,8 +31,9 @@ function App() {
         <Route element={<Layout isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}/>}>
           <Route path='/' element={<Home/>}/>
           <Route path='/home' element={<Home/>}/>
-          <Route path='/cart' element={<Cart/>}/>
-          <Route path='/cartItem' element={<CartItem/>}/>
+          {/* <Route path='/cart' element={<Cart/>}/> */}
+          <Route path='/cart' element={<CartMain/>}/>
+          {/* <Route path='/cartItem' element={<CartItem/>}/> */}
           <Route path='/card' element={<TodayDeals/>}/>
           <Route path='/products' element={<Products/>}/>
           <Route path='/profile' element={<UserProfile/>}/>

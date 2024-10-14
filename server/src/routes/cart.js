@@ -23,6 +23,7 @@ router.post('/cart', async (req, res) => {
 
         // Check if the consumer already has a cart
         let cart = await Cart.findOne({ consumer: consumerId });
+        console.log(sellerProduct.images[0])
 
         if (!cart) {
             // Create a new cart for the consumer if it doesn't exist
@@ -32,7 +33,8 @@ router.post('/cart', async (req, res) => {
                     product: productId,
                     seller: sellerId, // Include sellerId in the cart item
                     salePrice: sellerProduct.price,
-                    quantity: quantity
+                    quantity: quantity,
+                    image: sellerProduct.images[0],
                 }]
             });
         } else {
@@ -47,7 +49,8 @@ router.post('/cart', async (req, res) => {
                     product: productId, 
                     seller: sellerId, 
                     salePrice: sellerProduct.price, 
-                    quantity: quantity 
+                    quantity: quantity ,
+                    image: sellerProduct.images[0],
                 });
             } else {
                 // If the product from this seller is already in the cart, update the quantity
