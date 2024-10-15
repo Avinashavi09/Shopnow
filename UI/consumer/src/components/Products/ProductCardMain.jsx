@@ -13,7 +13,7 @@ const ProductCardMain = ({product}) => {
         const response = await axios.post(`http://localhost:3000/api/v1/cart`, cartData);
     }
   return (
-    <div className="max-w-md w-full">
+    <div className="max-w-md w-full px-3">
       <div className="bg-white rounded-2xl shadow-2xl overflow-hidden hover:shadow-3xl">
         <div className="relative">
           <div className="absolute inset-0 bg-gradient-to-br from-purple-400 to-indigo-600 opacity-75"></div>
@@ -26,7 +26,7 @@ const ProductCardMain = ({product}) => {
             NEW
           </div>
         </div>
-        <div className="p-6">
+        <div className="p-6 h-72">
           <h2 className="text-3xl font-extrabold text-gray-800 mb-2">
             {product.name ? product.name: 'product name'}
           </h2>

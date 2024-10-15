@@ -7,7 +7,7 @@ const GoogleLoginComponent = () => {
   const handleGoogleLoginSuccess = async (credentialResponse) => {
     try {
       // Send the credential to your backend
-      // console.log(credentialResponse)
+      console.log(credentialResponse)
       const response = await axios.post(
         "http://localhost:3000/api/v1/seller/auth/google",
         {

@@ -7,6 +7,8 @@ const { Seller } = require('../models/Seller/Seller');
 const { Product } = require('../models/Product/Product');
 const { Consumer } = require('../models/Consumer/Consumer');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const axios = require('axios');
+const jwt = require('jsonwebtoken');
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -35,6 +37,26 @@ async (accessToken, refreshToken, profile, done) => {
 
     return done(null, user);
 }));
+
+// Function to generate a JWT token
+const generateJwtToken = (user) => {
+    // Payload data you want to store in the token
+    const payload = {
+        id: user._id, // Store user ID (or any other unique identifier)
+        email: user.email,
+        name: user.name,
+        role: user.role || 'consumer', // Default role can be 'consumer' if not defined
+    };
+
+    // Options for the JWT (expiration, issuer, etc.)
+    const options = {
+        expiresIn: '1d', // Token will expire in 1 day
+    };
+
+    // Generate the token using a secret key
+    const token = jwt.sign(payload, "thisisasecret", options);
+    return token;
+};
 
 
 // Register a new seller
@@ -161,18 +183,53 @@ router.post('/seller/auth/google', async (req, res) => {
 });
 
 // Google consumer login route
+// router.post('/consumer/auth/google', async (req, res) => {
+//     const { credential } = req.body;
+
+//     try {
+//         // Verify the token
+//         const ticket = await client.verifyIdToken({
+//             idToken: credential,
+//             audience: process.env.GOOGLE_CLIENT_ID, // Specify the CLIENT_ID of the app that accesses the backend
+//         });
+
+//         const payload = ticket.getPayload();
+//         const { email, sub: googleId, name, picture } = payload;
+
+//         // Check if the user is a Seller or Consumer
+//         let user = await Seller.findOne({ email }) || await Consumer.findOne({ email });
+
+//         if (!user) {
+//             // If no user found, decide to create either Seller or Consumer based on your logic
+//             user = new Consumer({
+//                 name: name,
+//                 email: email,
+//                 googleId: googleId,
+//                 photo: picture,
+//                 authProvider: 'google',
+//             });
+//             await user.save();
+//         }
+
+//         // Now, generate a session or JWT token for the user and send it back
+//         // For simplicity, we'll just return a success message here
+//         res.status(200).json({ message: 'Login successful', user });
+
+//     } catch (err) {
+//         console.error('Error during Google login:', err);
+//         res.status(500).json({ message: 'Google login failed' });
+//     }
+// });
 router.post('/consumer/auth/google', async (req, res) => {
-    const { credential } = req.body;
+    const { access_token } = req.body;
 
     try {
-        // Verify the token
-        const ticket = await client.verifyIdToken({
-            idToken: credential,
-            audience: process.env.GOOGLE_CLIENT_ID, // Specify the CLIENT_ID of the app that accesses the backend
+        // Fetch the user info from Google's API using the access token
+        const userInfoResponse = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
+            headers: { Authorization: `Bearer ${access_token}` },
         });
 
-        const payload = ticket.getPayload();
-        const { email, sub: googleId, name, picture } = payload;
+        const { email, sub: googleId, name, picture } = userInfoResponse.data;
 
         // Check if the user is a Seller or Consumer
         let user = await Seller.findOne({ email }) || await Consumer.findOne({ email });
@@ -189,9 +246,11 @@ router.post('/consumer/auth/google', async (req, res) => {
             await user.save();
         }
 
-        // Now, generate a session or JWT token for the user and send it back
-        // For simplicity, we'll just return a success message here
-        res.status(200).json({ message: 'Login successful', user });
+        // Generate session or JWT token (you can add this part)
+        const token = generateJwtToken(user); // Function to generate JWT
+
+        // Return the token and user info
+        res.status(200).json({ message: 'Login successful', user, token });
 
     } catch (err) {
         console.error('Error during Google login:', err);

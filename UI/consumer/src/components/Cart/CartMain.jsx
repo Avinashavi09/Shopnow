@@ -52,7 +52,7 @@ const CartMain = () => {
                   <img
                     src={item.image}
                     alt={item.product.name}
-                    className="h-48 w-64 object-center object-cover md:block hidden"
+                    className="h-48 w-80 object-center object-cover md:block hidden"
                   />
                 </div>
                 <div className="md:pl-3 md:w-8/12 2xl:w-3/4 flex flex-col justify-center">

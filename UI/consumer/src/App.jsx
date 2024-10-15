@@ -11,9 +11,14 @@ import Products from './components/Products/Products';
 import Login from './components/Login/login';
 import UserProfile from './components/UserProfile/UserProfile';
 import CartMain from './components/Cart/CartMain';
+import DetailedProduct from './components/Products/DetailedProduct';
+import LoginMain from './components/Login/LoginMain';
+import RegisterMain from './components/Login/RegisterMain';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const clientId = "465767371442-q8hhoa5nbgs4c26fdj8ukcts30r680d4.apps.googleusercontent.com";
   useEffect(()=>{
     const token = localStorage.getItem('jwtToken');
     // console.log("Token from APP: " + token);
@@ -26,6 +31,7 @@ function App() {
   }, []) // passing second argument as [] to stop the possibility of this running infinite times.
 
   return (
+    <GoogleOAuthProvider clientId={`${clientId}`}>
     <Router>
       <Routes>
         <Route element={<Layout isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}/>}>
@@ -36,11 +42,15 @@ function App() {
           {/* <Route path='/cartItem' element={<CartItem/>}/> */}
           <Route path='/card' element={<TodayDeals/>}/>
           <Route path='/products' element={<Products/>}/>
+          <Route path='/product-detail' element={<DetailedProduct/>}/>
           <Route path='/profile' element={<UserProfile/>}/>
-          <Route path='/login' element={<Login setIsLoggedIn={setIsLoggedIn}/>}/>
+          {/* <Route path='/login' element={<Login setIsLoggedIn={setIsLoggedIn}/>}/> */}
         </Route>
+        <Route path='/login' element={<LoginMain setIsLoggedIn={setIsLoggedIn}/>}/>
+        <Route path='/register' element={<RegisterMain setIsLoggedIn={setIsLoggedIn}/>}/>
       </Routes>
     </Router>
+    </GoogleOAuthProvider>
   )
 }
 
