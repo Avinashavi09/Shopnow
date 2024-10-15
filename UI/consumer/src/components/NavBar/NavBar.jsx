@@ -9,7 +9,7 @@ import loginContext from '../Context/LoginContext';
 
 
 
-const NavBar = (props) => {
+const NavBar = () => {
     // const isLoggedIn = props.isLoggedIn;
     const {isLoggedIn, setIsLoggedIn} = useContext(loginContext);
     const navigate = useNavigate();

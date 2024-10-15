@@ -50,7 +50,7 @@ const Login = ({setIsLoggedIn}) => {
             // console.log(localStorage.getItem('userId'));
             setIsLoggedIn(true); // Set the state to true
             console.log("Logged In!");
-            navigate('/home'); //TODO: Un-comment this line;
+            navigate('/home');
           } else {
             // Handle authentication error, show a message to the user, etc.
             console.error('Authentication failed');

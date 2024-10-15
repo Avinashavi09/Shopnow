@@ -15,7 +15,7 @@ import DetailedProduct from './components/Products/DetailedProduct';
 import LoginMain from './components/Login/LoginMain';
 import RegisterMain from './components/Login/RegisterMain';
 import { GoogleOAuthProvider } from '@react-oauth/google';
-import loginContext, { LoginContextProvider } from './components/Context/LoginContext';
+import { LoginContextProvider } from './components/Context/LoginContext';
 
 function App() {
   const clientId = "465767371442-q8hhoa5nbgs4c26fdj8ukcts30r680d4.apps.googleusercontent.com";

@@ -1,22 +1,24 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { toast } from 'react-toastify';
 
 const CartMain = () => {
   const [cartData, setCartData] = useState([]);
+  const consumerId = localStorage.getItem("consumerId");
   const fetchCartItems = async () => {
     const response = await axios.get(
-      `http://localhost:3000/api/v1/cart/670927e574cb482fc0de4c7b`
+      `http://localhost:3000/api/v1/cart/${consumerId}`
     );
-    console.log(response.data);
     setCartData(response.data);
   };
   const updateCartItems = async(data) => {
+    console.log(data)
     const modifyData = {
         "productId": data.productId,
-        "sellerId": "670538ce5d5a6adc594c8396",
+        "sellerId": data.sellerId,
         "quantity": data.quantity
     }
-    await axios.put(`http://localhost:3000/api/v1/cart/670927e574cb482fc0de4c7b`, modifyData);
+    await axios.put(`http://localhost:3000/api/v1/cart/${consumerId}`, modifyData);
     fetchCartItems();
   }
   const removeCartItem = async(data) => {
@@ -25,7 +27,8 @@ const CartMain = () => {
         "sellerId": data.sellerId
     }
     try{
-        await axios.delete(`http://localhost:3000/api/v1/cart/670927e574cb482fc0de4c7b`, {data:deleteData});
+        await axios.delete(`http://localhost:3000/api/v1/cart/${consumerId}`, {data:deleteData});
+        toast("Product removed successfully!");
         fetchCartItems();
     } catch(err){
         console.error(err);
@@ -66,7 +69,7 @@ const CartMain = () => {
                     <select
                       aria-label="Select quantity"
                       className="py-2 px-1 border border-gray-200 mr-6 focus:outline-none"
-                      onChange={(e)=>{updateCartItems({productId: item.product._id, quantity: e.target.value})}}
+                      onChange={(e)=>{updateCartItems({productId: item.product._id, quantity: e.target.value, sellerId: item.seller._id})}}
                       defaultValue={item.quantity}
                     >
                       <option value="1">01</option>

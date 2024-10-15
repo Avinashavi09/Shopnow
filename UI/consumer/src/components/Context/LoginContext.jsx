@@ -2,18 +2,16 @@ import { createContext, useState} from "react"
 import PropTypes from 'prop-types'
 import { useEffect } from "react";
 
-// TODO: CHANGE THE NAME OF THIS CONTEXT TO MAIN_CONTEXT;
-
 
 const loginContext = createContext();
 
 export const LoginContextProvider = ({children}) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const handleLoginLocal = () => {
-        const token = localStorage.getItem('userJwtToken');
+        // const token = localStorage.getItem('userJwtToken');
         const consumerId = localStorage.getItem('consumerId');
         // console.log(token)
-        console.log(consumerId)
+        // console.log(consumerId)
         if(consumerId){
             setIsLoggedIn(true);
         }

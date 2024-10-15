@@ -1,37 +1,53 @@
 import { useSearchParams } from "react-router-dom"
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { Rating } from 'react-simple-star-rating'
+import { Link } from "react-router-dom";
 import axios from "axios";
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-const ProductDetail = ({ product }) => {
-  const [review, setReview] = useState("");
-  const [reviews, setReviews] = useState([
-    { id: 1, author: "John Doe", comment: "Great product!", rating: 5 },
-    { id: 2, author: "Jane Smith", comment: "Worth the price.", rating: 4 },
-  ]);
+const ProductDetail = () => {
+  // const [review, setReview] = useState("");
+  const [reviews, setReviews] = useState([]);
+  const [isInCart, setIsInCart] = useState(false);
   const [productData, setProductData] = useState([]) ;
   const [searchParams, setSearchParams] = useSearchParams();
   const productId = searchParams.get("product_id");
   const sellerId =  searchParams.get("seller_id");
+  const consumerId = localStorage.getItem("consumerId");
+  const [myReview, setMyReview] = useState({});
 
   const fetchProducts = async() => {
-    console.log(productId+" " + sellerId)
+    // console.log(productId+" " + sellerId)
     const response = await axios.get(`http://localhost:3000/api/v1/products/${productId}/sellers/${sellerId}/`)
-    console.log(response.data.product);
+    // console.log(response.data.product);
     setProductData(response.data.product);
   }
   const fetchReviews = async() => {
     const response = await axios.get(`http://localhost:3000/api/v1/products/${productId}/sellers/${sellerId}/reviews`);
     setReviews(response.data.reviews);
-    console.log(response.data.reviews)
+    // console.log(response.data.reviews)
   }
   const handleAddReview = async() => {
-    //TODO: ADD FUNCTIONALITY;  
+    if(!myReview.rating || !myReview.message){
+      toast("Rating Can't be empty");
+      return;
+    }
+    if(!myReview.message){
+      toast("Message Can't be empty");
+      return;
+    }
+    const consumerId = localStorage.getItem("consumerId");
+    // console.log("Consumer Id: ",consumerId)
+    console.log(myReview)
     const data = {
-      "consumerId": "670927e574cb482fc0de4c7b",
-      "rating": 5,
-      "comment": "Testing Product!"
-  }  
+      "consumerId": consumerId,
+      "rating": myReview.rating,
+      "comment": myReview.message
+    }  
+    // console.log(data)
     await axios.post(`http://localhost:3000/api/v1/products/${productId}/sellers/${sellerId}/reviews`, data);
+    setMyReview({'message': '', 'rating': 0});
     fetchReviews();
   }
   const handleAddtoCart = async() => {
@@ -42,11 +58,26 @@ const ProductDetail = ({ product }) => {
         "sellerId": sellerId,
         "quantity": 1
     }
-    const response = await axios.post(`http://localhost:3000/api/v1/cart`, cartData);
-}
+    await axios.post(`http://localhost:3000/api/v1/cart`, cartData);
+    toast("Item added to cart successfully!")
+    setIsInCart(true);
+  }
+  const handleRating = (rate) => {
+    setMyReview({...myReview,'rating': rate});
+  }
+  const checkIsInCart = async() => {
+    try{
+      const response = await axios.get(`http://localhost:3000/api/v1/cart/${consumerId}`);
+      const isProductInCart = response.data.cartItems.some((item) => item.product.id === productId && item.seller.id == sellerId);
+      setIsInCart(isProductInCart);
+    } catch(err){
+      console.error(err);
+    }
+  }
   useEffect(()=>{
     fetchProducts();
     fetchReviews();
+    checkIsInCart();
   },[])
 
   if(!productData && productData.seller){
@@ -77,9 +108,20 @@ const ProductDetail = ({ product }) => {
 
           {/* Action Buttons */}
           <div className="flex gap-4 mb-6">
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors" onClick={handleAddtoCart}>
-              Add to Cart
-            </button>
+            {
+              isInCart && 
+              <Link as={Link} to={'/cart'}>
+                <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">
+                  Go to Cart
+                </button>
+              </Link>
+            }
+            {
+              !isInCart && 
+              <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors" onClick={handleAddtoCart}>
+                Add to Cart
+              </button>
+            }
             <button className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors">
               Buy Now
             </button>
@@ -105,13 +147,18 @@ const ProductDetail = ({ product }) => {
 
             {/* Add Review Section */}
             <div className="mt-6">
-              <h3 className="text-xl font-semibold text-gray-700">Add a Review</h3>
+              <h3 className="text-xl  font-semibold text-gray-700">Add a Review</h3>
+              <Rating
+              onClick={handleRating}
+              SVGstyle={{'display': 'inline'}}
+              initialValue={myReview.rating}
+              />
               <textarea
                 className="w-full border border-gray-300 rounded-lg p-2 mt-2 focus:outline-none focus:border-blue-500"
                 rows="3"
                 placeholder="Write your review here..."
-                value={review}
-                onChange={(e) => setReview(e.target.value)}
+                value={myReview.message}
+                onChange={(e) => {setMyReview({...myReview,'message': e.target.value})}}
               />
               <button
                 className="mt-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
