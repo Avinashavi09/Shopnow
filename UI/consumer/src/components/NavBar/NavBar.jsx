@@ -4,12 +4,14 @@ import Nav from 'react-bootstrap/Nav';
 import NavDropdown from 'react-bootstrap/NavDropdown';
 import { Button, Container, Navbar } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useContext } from 'react';
+import loginContext from '../Context/LoginContext';
 
 
 
 const NavBar = (props) => {
-    const isLoggedIn = props.isLoggedIn;
+    // const isLoggedIn = props.isLoggedIn;
+    const {isLoggedIn, setIsLoggedIn} = useContext(loginContext);
     const navigate = useNavigate();
 
   return (
@@ -57,11 +59,13 @@ const NavBar = (props) => {
                                     {/* <NavDropdown.Item as={Link}>My Orders</NavDropdown.Item> */}
                                     <NavDropdown.Item onClick={()=>{
                                             console.log("Logged out!")
-                                            console.log(props.isLoggedIn)
-                                            props.setIsLoggedIn(false);
-                                            console.log(props.isLoggedIn)
-                                            localStorage.removeItem('jwtToken');
-                                            localStorage.removeItem('userId');
+                                            setIsLoggedIn(false);
+                                            localStorage.removeItem('consumerEmail');
+                                            localStorage.removeItem('consumerId');
+                                            localStorage.removeItem('consumerName');
+                                            localStorage.removeItem('consumerPhoto');
+                                            localStorage.removeItem('googleId');
+
                                             navigate('/home');
                                             // window.location.reload();
                                         }

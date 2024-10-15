@@ -1,43 +1,50 @@
 import { useGoogleLogin } from '@react-oauth/google';
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { useEffect } from 'react';
+import { useContext, useEffect } from 'react';
+import loginContext from '../Context/LoginContext';
 
 const LoginWithGoogleButton = () => {
   const navigate = useNavigate();
-  const handleGoogleLoginSuccess = async (credentialResponse) => {
-    try {
-      console.log("ON SUCCESS");
-      console.log(credentialResponse)
-      // Send the credential to your backend
-      // console.log(credentialResponse)
-      // const response = await axios.post(
-      //   "http://localhost:3000/api/v1/consumer/auth/google",
-      //   {
-      //     credential: credentialResponse.credential,
-      //   }
-      // );
-
-      // console.log("Login Success:", response.data);
-      // if (response) {
-      //   const consumerId = response.data.user.id;
-      //   const consumerName = response.data.user.name;
-      //   const consumerEmail = response.data.user.email;
-      //   const googleId = response.data.user.googleId;
-      //   const consumerPhoto = response.data.user.photo;
-      //   console.log(consumerPhoto)
-      //   localStorage.setItem("consumerId", consumerId);
-      //   localStorage.setItem("consumerEmail", consumerEmail);
-      //   localStorage.setItem("consumerName", consumerName);
-      //   localStorage.setItem("googleId", googleId);
-      //   localStorage.setItem("consumerPhoto", consumerPhoto);
-      //   navigate("/");
-      // }
-      // Now handle the logged-in state, like saving tokens or redirecting
-    } catch (error) {
-      console.error("Google login failed:", error);
+  const {isLoggedIn, handleLoginLocal} = useContext(loginContext);
+  useEffect(()=>{
+    if(isLoggedIn){
+      navigate('/');
     }
-  };
+  },[isLoggedIn])
+  // const handleGoogleLoginSuccess = async (credentialResponse) => {
+  //   try {
+  //     console.log("ON SUCCESS");
+  //     console.log(credentialResponse)
+  //     // Send the credential to your backend
+  //     // console.log(credentialResponse)
+  //     // const response = await axios.post(
+  //     //   "http://localhost:3000/api/v1/consumer/auth/google",
+  //     //   {
+  //     //     credential: credentialResponse.credential,
+  //     //   }
+  //     // );
+
+  //     // console.log("Login Success:", response.data);
+  //     // if (response) {
+  //     //   const consumerId = response.data.user.id;
+  //     //   const consumerName = response.data.user.name;
+  //     //   const consumerEmail = response.data.user.email;
+  //     //   const googleId = response.data.user.googleId;
+  //     //   const consumerPhoto = response.data.user.photo;
+  //     //   console.log(consumerPhoto)
+  //     //   localStorage.setItem("consumerId", consumerId);
+  //     //   localStorage.setItem("consumerEmail", consumerEmail);
+  //     //   localStorage.setItem("consumerName", consumerName);
+  //     //   localStorage.setItem("googleId", googleId);
+  //     //   localStorage.setItem("consumerPhoto", consumerPhoto);
+  //     //   navigate("/");
+  //     // }
+  //     // Now handle the logged-in state, like saving tokens or redirecting
+  //   } catch (error) {
+  //     console.error("Google login failed:", error);
+  //   }
+  // };
   // const handleLogin = useGoogleLogin({
   //   onSuccess: async tokenResponse => {
   //     console.log(tokenResponse);
@@ -74,6 +81,7 @@ const LoginWithGoogleButton = () => {
           localStorage.setItem("consumerName", consumerName);
           localStorage.setItem("googleId", googleId);
           localStorage.setItem("consumerPhoto", consumerPhoto);
+          handleLoginLocal();
           navigate("/");
         }
       // console.log(userInfo);  // Handle user info or JWT in the response
