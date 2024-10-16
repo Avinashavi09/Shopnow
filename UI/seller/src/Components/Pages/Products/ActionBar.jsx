@@ -21,14 +21,36 @@ const ImageDrop = () => {
   //TODO: ALSO ADD `PREVIEW-DROP_IMAGES`
   const [file, setFile] = useState(null);
   const label = file ? file : "Click or drop your CSV file here";
+  const sellerId = localStorage.getItem("sellerId");
+  const bulkAdd = async() => {
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", file);  // Assuming you're sending the file as "file"
+
+    try {
+      const response = await axios.post(`http://localhost:3000/api/v1/sellers/${sellerId}/products/import`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      console.log(response.data);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+  
   return (
     <div className="flex">
       <StyledDropZone onDrop={setFile} label={label} className="flex-1 flex justify-center h-1 items-center rounded-md bg-inherit border-black border-[1px]"/>
       {
-        file &&
-        <button>Submit</button>
+        file && (
+          <>
+            <button onClick={bulkAdd}>Submit</button>
+            <button onClick={()=>{setFile(null)}}>Cancel</button>
+          </>
+        )
       }
-      <button>Cancel</button>
     </div>
   );
 };

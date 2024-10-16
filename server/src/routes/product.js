@@ -335,32 +335,65 @@ router.post("/sellers/:sellerId/products/import", uploadOptions.single("file"), 
     // Open and parse the CSV file
     fs.createReadStream(file.path)
       .pipe(csv()) // Pipe the file stream through the CSV parser
-      .on("data", (row) => {
-        // Map CSV columns to your product schema fields
-        const product = {
-          name: row.productName,
-          category: row.category,
-          description: row.description,
-          mrp: row.mrp,
-          purchasePrice: row.purchasePrice,
-          sellerProducts: [
-            {
-              seller: sellerId,
-              price: row.sellerPrice,
-              stock: row.stock,
-            },
-          ],
-        };
-        products.push(product);
+      .on("data", async (row) => {
+        try {
+          // Check if the product already exists in the database
+          let existingProduct = await Product.findOne({ name: row.productName });
+
+          if (existingProduct) {
+            // Check if the seller already exists in the sellerProducts array
+            const sellerExists = existingProduct.sellerProducts.some(sp => sp.seller.toString() === sellerId);
+
+            if (sellerExists) {
+              // If the seller exists, update price and stock for that seller
+              existingProduct.sellerProducts = existingProduct.sellerProducts.map((sp) =>
+                sp.seller.toString() === sellerId ? { ...sp, price: row.sellerPrice, stock: row.stock } : sp
+              );
+            } else {
+              // If the seller is not found, add the seller to the sellerProducts array
+              existingProduct.sellerProducts.push({
+                seller: sellerId,
+                price: row.sellerPrice,
+                stock: row.stock,
+              });
+            }
+
+            // Save the updated product
+            await existingProduct.save();
+          } else {
+            // If the product doesn't exist, create a new product
+            const newProduct = {
+              name: row.productName,
+              category: row.category,
+              description: row.description,
+              mrp: row.mrp,
+              purchasePrice: row.purchasePrice,
+              sellerProducts: [
+                {
+                  seller: sellerId,
+                  price: row.sellerPrice,
+                  stock: row.stock,
+                },
+              ],
+            };
+            products.push(newProduct);
+          }
+        } catch (error) {
+          console.error("Error processing row: ", error);
+        }
       })
       .on("end", async () => {
         try {
-          // Insert all the products into the database in one go
-          const insertedProducts = await Product.insertMany(products);
-          res.status(201).json({
-            message: `${insertedProducts.length} products added successfully`,
-            products: insertedProducts,
-          });
+          if (products.length > 0) {
+            // Insert new products
+            const insertedProducts = await Product.insertMany(products);
+            res.status(201).json({
+              message: `${insertedProducts.length} new products added successfully`,
+              products: insertedProducts,
+            });
+          } else {
+            res.status(200).json({ message: "All products were updated or already existed." });
+          }
         } catch (error) {
           console.error("Error inserting products: ", error);
           res.status(500).json({ message: "Error saving products to the database" });
