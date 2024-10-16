@@ -2,6 +2,8 @@ const express = require("express");
 const { Category } = require("../models/Category/Category");
 const { Product } = require("../models/Product/Product");
 const { Seller } = require("../models/Seller/Seller");
+const csv = require('csv-parser'); // CSV parser library
+const fs = require('fs'); // File system to read files
 const multer = require("multer");
 const router = express.Router();
 
@@ -9,12 +11,13 @@ const FILE_TYPE_MAP = {
   "image/png": "png",
   "image/jpeg": "jpeg",
   "image/jpg": "jpg",
+  'text/csv': 'csv'
 };
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const isValid = FILE_TYPE_MAP[file.mimetype];
-    let uploadError = new Error("invalid image type");
+    let uploadError = new Error("invalid file type");
 
     if (isValid) {
       uploadError = null;
@@ -309,6 +312,69 @@ router.post("/sellers/:sellerId/products", uploadOptions.single("images"),
     }
   }
 );
+
+// API to add multiple products for a seller from a CSV file
+router.post("/sellers/:sellerId/products/import", uploadOptions.single("file"), async (req, res) => {
+  const { sellerId } = req.params;
+  const file = req.file;
+
+  // Ensure a file is uploaded
+  if (!file) {
+    return res.status(400).json({ message: "No CSV file provided" });
+  }
+
+  try {
+    // Find the seller by ID
+    const seller = await Seller.findById(sellerId);
+    if (!seller) {
+      return res.status(404).json({ message: "Seller not found" });
+    }
+
+    const products = [];
+
+    // Open and parse the CSV file
+    fs.createReadStream(file.path)
+      .pipe(csv()) // Pipe the file stream through the CSV parser
+      .on("data", (row) => {
+        // Map CSV columns to your product schema fields
+        const product = {
+          name: row.productName,
+          category: row.category,
+          description: row.description,
+          mrp: row.mrp,
+          purchasePrice: row.purchasePrice,
+          sellerProducts: [
+            {
+              seller: sellerId,
+              price: row.sellerPrice,
+              stock: row.stock,
+            },
+          ],
+        };
+        products.push(product);
+      })
+      .on("end", async () => {
+        try {
+          // Insert all the products into the database in one go
+          const insertedProducts = await Product.insertMany(products);
+          res.status(201).json({
+            message: `${insertedProducts.length} products added successfully`,
+            products: insertedProducts,
+          });
+        } catch (error) {
+          console.error("Error inserting products: ", error);
+          res.status(500).json({ message: "Error saving products to the database" });
+        }
+      })
+      .on("error", (error) => {
+        console.error("Error reading CSV file: ", error);
+        res.status(500).json({ message: "Error processing CSV file" });
+      });
+  } catch (error) {
+    console.error("Error in CSV upload process: ", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
 // MODIFY PRODUCT INFO BY SELLER
 router.put('/sellers/:sellerId/products/:productId', async (req, res) => {

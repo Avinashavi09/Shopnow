@@ -14,6 +14,24 @@ import DialogTitle from "@mui/material/DialogTitle";
 import { useState } from "react";
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { StyledDropZone } from "react-drop-zone";
+// import "react-drop-zone/dist/styles.css";
+
+const ImageDrop = () => {
+  //TODO: ALSO ADD `PREVIEW-DROP_IMAGES`
+  const [file, setFile] = useState(null);
+  const label = file ? file : "Click or drop your CSV file here";
+  return (
+    <div className="flex">
+      <StyledDropZone onDrop={setFile} label={label} className="flex-1 flex justify-center h-1 items-center rounded-md bg-inherit border-black border-[1px]"/>
+      {
+        file &&
+        <button>Submit</button>
+      }
+      <button>Cancel</button>
+    </div>
+  );
+};
 
 const DeleteDialog = ({ selectedRows, open, setOpen, sellerId, setDeletingProduct }) => {
   const handleClose = () => {
@@ -74,6 +92,7 @@ const ActionBar = ({
   setDeletingProduct
 }) => {
   const [open, setOpen] = useState(false);
+  const [isImportOpen, setIsImportOpen] = useState(false);
 
   const handleExport = () => {
     setIsExportClicked(true);
@@ -102,10 +121,14 @@ const ActionBar = ({
             <MdOutlineFileUpload />
             Export
           </button>
-          <button className="p-3 px-5 rounded-lg flex justify-center items-center gap-2 border-black border  duration-150 hover:border-emerald-500">
+          <button className="p-3 px-5 rounded-lg flex justify-center items-center gap-2 border-black border  duration-150 hover:border-emerald-500" onClick={()=>{setIsImportOpen(true)}}>
             <MdOutlineFileDownload />
             Import
           </button>
+          {
+            isImportOpen &&
+            <ImageDrop/>
+          }
         </div>
         <div className="p-1 flex-1 flex justify-end gap-8">
           <button className="p-3 bg-slate-400 rounded-lg flex justify-center items-center gap-2">
