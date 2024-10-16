@@ -55,7 +55,7 @@ router.get('/sellers/:sellerId/recent-orders/:quantity', async (req, res) => {
     try {
         // Find orders where the seller matches the sellerId, sort by orderDate, and limit to 10
         const recentOrders = await Order.find({ 'seller': sellerId })
-            .sort({ orderDate: -1 })  // Sort by orderDate in descending order
+            .sort({ orderedAt: -1 })  // Sort by orderDate in descending order
             .limit(quantity)  // Limit the results to 10
             .populate('consumer', 'name email') // Populating consumer details if needed
             .populate('seller', 'name'); // Populating seller details if needed

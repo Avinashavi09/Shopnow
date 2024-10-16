@@ -222,23 +222,25 @@ router.get("/products/category/:categoryId", async (req, res) => {
 
     products.forEach((product) => {
       product.sellerProducts.forEach((sellerProduct) => {
-        allProducts.push({
-          id: product._id,
-          name: product.name,
-          description: product.description,
-          category: product.category.name,
-          mrp: product.mrp,
-          seller: sellerProduct.seller._id,
-          sellerName: sellerProduct.seller.name, // Assuming seller has a 'name' field
-          sellerRating: sellerProduct.sellerRating,
-          price: sellerProduct.price,
-          stock: sellerProduct.stock,
-          sellerRating: (Math.round(sellerProduct.sellerRating * 100) / 100).toFixed(2),
-          numReviews: sellerProduct.numReviews,
-          status: sellerProduct.status,
-          published: product.published,
-          image: sellerProduct ? sellerProduct.images[0] : '',
-        });
+        if(sellerProduct.stock > 0){
+          allProducts.push({
+            id: product._id,
+            name: product.name,
+            description: product.description,
+            category: product.category.name,
+            mrp: product.mrp,
+            seller: sellerProduct.seller._id,
+            sellerName: sellerProduct.seller.name, // Assuming seller has a 'name' field
+            sellerRating: sellerProduct.sellerRating,
+            price: sellerProduct.price,
+            stock: sellerProduct.stock,
+            sellerRating: (Math.round(sellerProduct.sellerRating * 100) / 100).toFixed(2),
+            numReviews: sellerProduct.numReviews,
+            status: sellerProduct.status,
+            published: product.published,
+            image: sellerProduct ? sellerProduct.images[0] : '',
+          });
+        }
       });
     });
 

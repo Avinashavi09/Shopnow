@@ -153,6 +153,13 @@ router.delete('/cart/:consumerId', async (req, res) => {
 
         // Remove the item from the cart
         cart.cartItems.splice(cartItemIndex, 1);
+
+        // Recalculate the total price atomically
+        cart.totalPrice = cart.cartItems.reduce((total, item) => {
+            return total + (item.salePrice * item.quantity);
+        }, 0);
+
+
         await cart.save();
 
         res.status(200).json({ message: 'Product removed from cart' });
@@ -161,6 +168,36 @@ router.delete('/cart/:consumerId', async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 });
+
+// DELETE all cart items for a specific consumer
+router.delete('/cart/:consumerId/all', async (req, res) => {
+    const { consumerId } = req.params;
+
+    try {
+        // Find the consumer's cart
+        const cart = await Cart.findOne({ consumer: consumerId });
+
+        if (!cart) {
+            return res.status(404).json({ message: 'Cart not found' });
+        }
+
+        // Clear the cart items array
+        cart.cartItems = [];
+
+        // Recalculate the total price atomically
+        cart.totalPrice = cart.cartItems.reduce((total, item) => {
+            return total + (item.salePrice * item.quantity);
+        }, 0);
+
+        await cart.save();
+
+        res.status(200).json({ message: 'All items removed from cart' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
 
 
 module.exports =router;

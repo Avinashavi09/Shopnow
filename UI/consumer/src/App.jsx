@@ -2,8 +2,6 @@ import './App.css'
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import Layout from './components/Layout/Layout'
 import Home from './components/Home/Home'
-import Cart from './components/Cart/Cart';
-import CartItem from './components/Cart/CartItem';
 import TodayDeals from './components/TodaysDeals/TodayDeals';
 
 import { useContext, useEffect, useState } from 'react';
@@ -16,6 +14,8 @@ import LoginMain from './components/Login/LoginMain';
 import RegisterMain from './components/Login/RegisterMain';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { LoginContextProvider } from './components/Context/LoginContext';
+import Orders from './components/Orders/Orders';
+import Settings from './components/Settings/Settings';
 
 function App() {
   const clientId = "465767371442-q8hhoa5nbgs4c26fdj8ukcts30r680d4.apps.googleusercontent.com";
@@ -33,7 +33,9 @@ function App() {
               <Route path='/card' element={<TodayDeals/>}/>
               <Route path='/products' element={<Products/>}/>
               <Route path='/product-detail' element={<DetailedProduct/>}/>
-              <Route path='/profile' element={<UserProfile/>}/>
+              {/* <Route path='/profile' element={<UserProfile/>}/> */}
+              <Route path='/profile' element={<Settings/>}/>
+              <Route path='/orders' element={<Orders/>}/>
               {/* <Route path='/login' element={<Login setIsLoggedIn={setIsLoggedIn}/>}/> */}
             </Route>
             <Route path='/login' element={<LoginMain/>}/>

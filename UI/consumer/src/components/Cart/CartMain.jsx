@@ -34,6 +34,27 @@ const CartMain = () => {
         console.error(err);
     }
   }
+  const handleCheckout = async() => {
+    console.log("Checkout clicked!");
+    cartData.cartItems.forEach(async(item)=>{
+      console.log(item);
+      const data = {
+        "consumerId": consumerId,
+        "sellerId": item.seller.id,
+        "productId": item.product.id,
+        "quantity": item.quantity
+    }
+    console.log(data)
+      const response = await axios.post(`http://localhost:3000/api/v1/orders/`, data);
+      if(response.data.message ===  "Not enough stock available"){
+        toast(`${item.product.name} is Out of stock!`)
+      }
+      // removeCartItem({"productId": item.product.id, "sellerId": item.seller.id});
+    })
+
+    await axios.delete(`http://localhost:3000/api/v1/cart/${consumerId}/all`);
+    fetchCartItems();
+  }
   useEffect(() => {
     fetchCartItems();
   }, []);
@@ -162,9 +183,9 @@ const CartMain = () => {
           <div className="border-t mt-8">
             <div className="flex font-semibold justify-between py-6 text-sm uppercase">
               <span>Total cost</span>
-              <span>₹{cartData && cartData.totalPrice}</span>
+              <span>₹{cartData ? cartData.totalPrice : 0}</span>
             </div>
-            <button className="bg-indigo-500 font-semibold hover:bg-indigo-600 py-3 text-sm text-white uppercase w-full">
+            <button className="bg-indigo-500 font-semibold hover:bg-indigo-600 py-3 text-sm text-white uppercase w-full" onClick={handleCheckout}>
               Checkout
             </button>
           </div>

@@ -32,7 +32,7 @@ router.post('/orders', async (req, res) => {
 
         // Check if there's enough stock
         if (sellerProduct.stock < quantity) {
-            return res.status(400).json({ message: 'Not enough stock available' });
+            return res.status(200).json({ message: 'Not enough stock available' });
         }
 
         // Generate the next invoice number
@@ -117,7 +117,7 @@ router.get('/sellers/:sellerId/orders', async(req,res)=>{
     try {
         // Find orders where the seller matches the sellerId, sort by orderDate, and limit to 10
         const allOrders = await Order.find({ 'seller': sellerId })
-            .sort({ orderDate: -1 })  // Sort by orderDate in descending order
+            .sort({ orderedAt: -1 })  // Sort by orderDate in descending order
             .populate('consumer', 'name email') // Populating consumer details if needed
             .populate('seller', 'name') // Populating seller details if needed
             .populate('product', 'name');
@@ -135,6 +135,33 @@ router.get('/sellers/:sellerId/orders', async(req,res)=>{
         res.status(500).json({ message: 'Server error' });
     }
 });
+
+// GET all orders of a specific consumer
+router.get('/consumers/:consumerId/orders', async (req, res) => {
+    const { consumerId } = req.params;
+
+    try {
+        // Find orders where the consumer matches the consumerId, sort by orderDate, and limit to 10
+        const allOrders = await Order.find({ 'consumer': consumerId })
+            .sort({ orderedAt: -1 })  // Sort by orderDate in descending order
+            .populate('consumer', 'name email')  // Populating consumer details
+            .populate('seller', 'name')  // Populating seller details if needed
+            .populate('product', 'name'); // Populating product details
+
+        if (!allOrders || allOrders.length === 0) {
+            return res.status(404).json({ message: 'No orders found for this consumer' });
+        }
+
+        res.status(200).json({
+            message: `Orders found for consumer ${consumerId}`,
+            allOrders: allOrders
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
 
 
 router.put('/orders/:orderId', async (req, res) => {
