@@ -30,6 +30,13 @@ const Products = () => {
       </div>
     )
   }
+  if(products.length == 0){
+    return (
+      <div className="w-screen h-[600px] flex justify-center items-center">
+        <h1 className='font-bold text-2xl'>No Products Found!</h1>
+      </div>
+    )
+  }
   return (
     <div className="w-screen h-fit">
         <div className='w-full h-full bg-green-100 grid sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pt-16'>

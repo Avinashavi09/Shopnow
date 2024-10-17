@@ -12,6 +12,9 @@ const Orders = () => {
     useEffect(()=>{
         fetchOrders();
     },[])
+    if(!orderHistory){
+        return <h1>Loading...</h1>
+    }
   return (
     <section className="py-24 relative">
     <div className="w-full max-w-7xl mx-auto px-4 md:px-8">
@@ -90,7 +93,7 @@ const Orders = () => {
                                 <div
                                     className="col-span-4 sm:col-span-3 max-sm:mt-4 sm:pl-8 flex flex-col justify-center max-sm:items-center">
                                     <h6 className="font-manrope font-semibold text-2xl leading-9 text-black mb-3 whitespace-nowrap">
-                                        {order.product.name}</h6>
+                                        {order.product ? order.product.name : 'product name'}</h6>
                                     <p className="font-normal text-lg leading-8 text-gray-500 mb-8 whitespace-nowrap">By: {order.seller.name}</p>
                                     <div className="flex items-center max-sm:flex-col gap-x-10 gap-y-3">
                                         {/* <span className="font-normal text-lg leading-8 text-gray-500 whitespace-nowrap">Size: s</span> */}

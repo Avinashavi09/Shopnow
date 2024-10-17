@@ -67,21 +67,20 @@ const ProductsList = ({selectedRows, setSelectedRows, isSubmitClicked, apiRef, d
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const fetchProducts = async () => {
+    try {
+      // Call the API to get all products for a seller
+      const response = await axios.get(`http://localhost:3000/api/v1/sellers/${sellerId}/products`);
+      setProducts(response.data.products); // Assuming the API returns products under 'products'
+      setLoading(false);
+      setDeletingProduct(false);
+    } catch (err) {
+      console.error(err);
+      setError("Error fetching products");
+      setLoading(false);
+    }
+  };
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        // Call the API to get all products for a seller
-        const response = await axios.get(`http://localhost:3000/api/v1/sellers/${sellerId}/products`);
-        setProducts(response.data.products); // Assuming the API returns products under 'products'
-        setLoading(false);
-        setDeletingProduct(false);
-      } catch (err) {
-        console.error(err);
-        setError("Error fetching products");
-        setLoading(false);
-      }
-    };
-
     fetchProducts();
   }, [sellerId, isSubmitClicked, deletingProduct]);
 

@@ -4,7 +4,6 @@ import Layout from './components/Layout/Layout'
 import Home from './components/Home/Home'
 import TodayDeals from './components/TodaysDeals/TodayDeals';
 
-import { useContext, useEffect, useState } from 'react';
 import Products from './components/Products/Products';
 import Login from './components/Login/login';
 import UserProfile from './components/UserProfile/UserProfile';

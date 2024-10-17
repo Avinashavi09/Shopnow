@@ -110,9 +110,9 @@ router.put('/cart/:consumerId', async (req, res) => {
             { new: true }
         );
 
-        if (!cart) {
-            return res.status(404).json({ message: 'Cart or cart item not found for this seller' });
-        }
+        // if (!cart) {
+        //     return res.status(200).json({ message: 'Cart or cart item not found for this seller' });
+        // }
 
         // Recalculate the total price atomically
         cart.totalPrice = cart.cartItems.reduce((total, item) => {

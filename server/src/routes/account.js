@@ -158,7 +158,7 @@ router.post('/seller/auth/google', async (req, res) => {
         const { email, sub: googleId, name, picture } = payload;
 
         // Check if the user is a Seller or Consumer
-        let user = await Seller.findOne({ email }) || await Consumer.findOne({ email });
+        let user = await Seller.findOne({ email });
 
         if (!user) {
             // If no user found, decide to create either Seller or Consumer based on your logic

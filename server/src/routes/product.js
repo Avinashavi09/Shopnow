@@ -187,8 +187,8 @@ router.get("/sellers/:sellerId/products", async (req, res) => {
 
     if (formattedProducts.length === 0) {
       return res
-        .status(404)
-        .json({ message: "No products found for this seller" });
+        .status(200)
+        .json({ message: "No products found for this seller", products: [] });
     }
 
     res.status(200).json({
@@ -213,12 +213,6 @@ router.get("/products/category/:categoryId", async (req, res) => {
     })
       .populate("category")
       .populate("sellerProducts.seller");
-
-    if (products.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No products found for this category" });
-    }
 
     // Flatten the products based on sellerProducts
     let allProducts = [];
@@ -331,78 +325,88 @@ router.post("/sellers/:sellerId/products/import", uploadOptions.single("file"), 
     }
 
     const products = [];
+const promises = []; // To store all async operations
 
-    // Open and parse the CSV file
-    fs.createReadStream(file.path)
-      .pipe(csv()) // Pipe the file stream through the CSV parser
-      .on("data", async (row) => {
-        try {
-          // Check if the product already exists in the database
-          let existingProduct = await Product.findOne({ name: row.productName });
+// Open and parse the CSV file
+fs.createReadStream(file.path)
+  .pipe(csv()) // Pipe the file stream through the CSV parser
+  .on("data", (row) => {
+    const processRow = async () => {
+      try {
+        // Check if the product already exists in the database
+        let existingProduct = await Product.findOne({ name: row.productName });
+        if (existingProduct) {
+          // Check if the seller already exists in the sellerProducts array
+          const sellerExists = existingProduct.sellerProducts.some(sp => sp.seller.toString() === sellerId);
 
-          if (existingProduct) {
-            // Check if the seller already exists in the sellerProducts array
-            const sellerExists = existingProduct.sellerProducts.some(sp => sp.seller.toString() === sellerId);
+          if (sellerExists) {
+            // If the seller exists, update price and stock for that seller
+            existingProduct.sellerProducts = existingProduct.sellerProducts.map((sp) =>
+              sp.seller.toString() === sellerId ? { ...sp, price: row.sellerPrice, stock: row.stock } : sp
+            );
+          } else {
+            // If the seller is not found, add the seller to the sellerProducts array
+            existingProduct.sellerProducts.push({
+              seller: sellerId,
+              price: row.sellerPrice,
+              stock: row.stock,
+            });
+          }
 
-            if (sellerExists) {
-              // If the seller exists, update price and stock for that seller
-              existingProduct.sellerProducts = existingProduct.sellerProducts.map((sp) =>
-                sp.seller.toString() === sellerId ? { ...sp, price: row.sellerPrice, stock: row.stock } : sp
-              );
-            } else {
-              // If the seller is not found, add the seller to the sellerProducts array
-              existingProduct.sellerProducts.push({
+          // Save the updated product
+          await existingProduct.save();
+        } else {
+          // If the product doesn't exist, create a new product
+          const newProduct = {
+            name: row.productName,
+            category: row.category,
+            description: row.description,
+            mrp: row.mrp,
+            purchasePrice: row.purchasePrice,
+            sellerProducts: [
+              {
                 seller: sellerId,
                 price: row.sellerPrice,
                 stock: row.stock,
-              });
-            }
+              },
+            ],
+          };
+          products.push(newProduct);
+        }
+      } catch (error) {
+        console.error("Error processing row: ", error);
+      }
+    };
 
-            // Save the updated product
-            await existingProduct.save();
-          } else {
-            // If the product doesn't exist, create a new product
-            const newProduct = {
-              name: row.productName,
-              category: row.category,
-              description: row.description,
-              mrp: row.mrp,
-              purchasePrice: row.purchasePrice,
-              sellerProducts: [
-                {
-                  seller: sellerId,
-                  price: row.sellerPrice,
-                  stock: row.stock,
-                },
-              ],
-            };
-            products.push(newProduct);
-          }
-        } catch (error) {
-          console.error("Error processing row: ", error);
-        }
-      })
-      .on("end", async () => {
-        try {
-          if (products.length > 0) {
-            // Insert new products
-            const insertedProducts = await Product.insertMany(products);
-            res.status(201).json({
-              message: `${insertedProducts.length} new products added successfully`,
-              products: insertedProducts,
-            });
-          } else {
-            res.status(200).json({ message: "All products were updated or already existed." });
-          }
-        } catch (error) {
-          console.error("Error inserting products: ", error);
-          res.status(500).json({ message: "Error saving products to the database" });
-        }
-      })
-      .on("error", (error) => {
-        console.error("Error reading CSV file: ", error);
-        res.status(500).json({ message: "Error processing CSV file" });
-      });
+    // Push the async processRow function to the promises array
+    promises.push(processRow());
+  })
+  .on("end", async () => {
+    try {
+      // Wait for all the promises to complete before proceeding
+      await Promise.all(promises);
+
+      if (products.length > 0) {
+        // Insert new products
+        const insertedProducts = await Product.insertMany(products);
+        res.status(201).json({
+          message: `${insertedProducts.length} new products added successfully`,
+          products: insertedProducts,
+        });
+      } else {
+        res.status(200).json({ message: "All products were updated or already existed." });
+      }
+    } catch (error) {
+      console.error("Error inserting products: ", error);
+      res.status(500).json({ message: "Error saving products to the database" });
+    }
+  })
+  .on("error", (error) => {
+    console.error("Error reading CSV file: ", error);
+    res.status(500).json({ message: "Error processing CSV file" });
+  });
+
+
   } catch (error) {
     console.error("Error in CSV upload process: ", error);
     res.status(500).json({ message: "Server error" });
@@ -476,5 +480,62 @@ router.delete("/sellers/:sellerId/products/:productId", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
+// API TO BULK DELETE PRODUCTS;
+router.delete("/sellers/:sellerId/products/bulk/delete", async (req, res) => {
+  console.log("Hello")
+  const { productsList } = req.body; 
+  const { sellerId } = req.params;
+
+  console.log(productsList)
+
+  if (!Array.isArray(productsList) || productsList.length === 0) {
+    return res.status(400).json({ message: "Invalid input, expected an array of productId" });
+  }
+
+  try {
+    const deleteResults = [];
+
+    for (const productId of productsList) {
+      // Step 1: Find the product by productId
+      const product = await Product.findById(productId);
+      if (!product) {
+        deleteResults.push({ productId, sellerId, message: "Product not found" });
+        continue;
+      }
+
+      // Step 2: Find the seller's product details in the `sellerProducts` array of the product
+      const sellerIndex = product.sellerProducts.findIndex(
+        (sp) => sp.seller.toString() === sellerId
+      );
+      if (sellerIndex === -1) {
+        deleteResults.push({ productId, sellerId, message: "Seller does not sell this product" });
+        continue;
+      }
+
+      // Step 3: Remove the seller's product details from the product's `sellerProducts`
+      product.sellerProducts.splice(sellerIndex, 1);
+      
+      // If no sellers are left for the product, optionally delete the product itself
+      if (product.sellerProducts.length === 0) {
+        await Product.findByIdAndDelete(productId); // If no seller left, delete product
+        deleteResults.push({ productId, sellerId, message: "Product deleted because no sellers remain" });
+      } else {
+        await product.save();
+        deleteResults.push({ productId, sellerId, message: "Seller's product removed successfully" });
+      }
+    }
+
+    res.status(200).json({
+      message: "Bulk delete operation completed",
+      results: deleteResults
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error during bulk deletion" });
+  }
+});
+
+
 
 module.exports = router;

@@ -12,7 +12,7 @@ const ProductCardMain = ({ product }) => {
   const handleAddtoCart = async () => {
     // Add product to cart
     const cartData = {
-      consumerId: "670927e574cb482fc0de4c7b", //Make this consumerId dynamic;
+      consumerId: localStorage.getItem("consumerId"), //Make this consumerId dynamic;
       productId: product.id,
       sellerId: product.seller,
       quantity: 1,
@@ -52,18 +52,21 @@ const ProductCardMain = ({ product }) => {
           </div>
         </div>
         </Link>
-        <div className="p-6 h-72">
+        <div className="p-6 h-[18rem] flex flex-col justify-between">
           <Link
             as={Link}
             to={`/product-detail?product_id=${product.id}&seller_id=${product.seller}`}
           >
-            <h2 className="text-3xl font-extrabold text-gray-800 mb-2">
+            <h2 className="text-xl font-extrabold text-gray-800 mb-2">
               {product.name ? product.name : "product name"}
             </h2>
             <p className="text-gray-600 mb-4">
               {product.description ? product.description : "description"}
             </p>
-            <div className="flex items-center justify-between mb-4">
+            
+          </Link>
+          <div className="">
+          <div className="flex items-center justify-between mb-4">
               <span className="text-2xl font-bold text-indigo-600">
                 ₹{product.price ? product.price : "price"}
               </span>
@@ -81,26 +84,26 @@ const ProductCardMain = ({ product }) => {
                 </span>
               </div>
             </div>
-          </Link>
-          {
-            isInCart &&
-            <button
-              className="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-lg"
-              // onClick={handleAddtoCart}
-              onClick={()=>navigate('/cart')}
-            >
-              Go to Cart
-            </button>
-          }
-          {
-            !isInCart &&
-            <button
-              className="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-lg"
-              onClick={handleAddtoCart}
-            >
-              Add to Cart
-            </button>
-          }
+              {
+                isInCart &&
+                <button
+                  className="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-lg"
+                  // onClick={handleAddtoCart}
+                  onClick={()=>navigate('/cart')}
+                >
+                  Go to Cart
+                </button>
+              }
+              {
+                !isInCart &&
+                <button
+                  className="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-lg"
+                  onClick={handleAddtoCart}
+                >
+                  Add to Cart
+                </button>
+              }
+          </div>
         </div>
       </div>
     </div>

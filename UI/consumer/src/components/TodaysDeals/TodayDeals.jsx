@@ -57,7 +57,7 @@ const TodayDeals = () => {
     }, []);
     // console.log(categories);
   return (
-    <div className="w-screen h-96 items-end pt-16">
+    <div className="w-full h-96 items-end pt-16">
         <div className="w-1/5 h-full float-left bg-red-300">
             <Card/>
         </div>

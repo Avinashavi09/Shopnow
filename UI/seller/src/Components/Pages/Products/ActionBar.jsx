@@ -17,61 +17,26 @@ import 'react-toastify/dist/ReactToastify.css';
 import { StyledDropZone } from "react-drop-zone";
 // import "react-drop-zone/dist/styles.css";
 
-const ImageDrop = () => {
-  //TODO: ALSO ADD `PREVIEW-DROP_IMAGES`
-  const [file, setFile] = useState(null);
-  const label = file ? file : "Click or drop your CSV file here";
-  const sellerId = localStorage.getItem("sellerId");
-  const bulkAdd = async() => {
-    if (!file) return;
 
-    const formData = new FormData();
-    formData.append("file", file);  // Assuming you're sending the file as "file"
-
-    try {
-      const response = await axios.post(`http://localhost:3000/api/v1/sellers/${sellerId}/products/import`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      console.log(response.data);
-    } catch (err) {
-      console.error(err);
-    }
-  }
-  
-  return (
-    <div className="flex">
-      <StyledDropZone onDrop={setFile} label={label} className="flex-1 flex justify-center h-1 items-center rounded-md bg-inherit border-black border-[1px]"/>
-      {
-        file && (
-          <>
-            <button onClick={bulkAdd}>Submit</button>
-            <button onClick={()=>{setFile(null)}}>Cancel</button>
-          </>
-        )
-      }
-    </div>
-  );
-};
 
 const DeleteDialog = ({ selectedRows, open, setOpen, sellerId, setDeletingProduct }) => {
   const handleClose = () => {
     setOpen(false);
   };
-  const deleteProducts = () => {
+  const deleteProducts = async() => {
     // setDeletingProduct(true);
     console.log("Deleting....");
-    selectedRows.map(async (row) => {
-      try {
-        // Call the API to get all products for a seller
-        await axios.delete(
-          `http://localhost:3000/api/v1/seller/${sellerId}/products/${row}`
-        );
-      } catch (err) {
-        console.error(err);
+    console.log(selectedRows);
+    try {
+      // Call the API to get all products for a seller
+      const data = {
+        "productsList": selectedRows
       }
-    });
+      const response = await axios.delete(`http://localhost:3000/api/v1/sellers/${sellerId}/products/bulk/delete`, {data});
+      console.log(response);
+    } catch (err) {
+      console.error(err);
+    }
     setOpen(false);
     setDeletingProduct(true);
     const notify = () => toast("Product Deleted Successfully!");
@@ -115,6 +80,45 @@ const ActionBar = ({
 }) => {
   const [open, setOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
+  const ImageDrop = () => {
+    //TODO: ALSO ADD `PREVIEW-DROP_IMAGES`
+    const [file, setFile] = useState(null);
+    const label = file ? file : "Click or drop your CSV file here";
+    const sellerId = localStorage.getItem("sellerId");
+    const bulkAdd = async() => {
+      // setAddingProduct(true);
+      if (!file) return;
+  
+      const formData = new FormData();
+      formData.append("file", file);  // Assuming you're sending the file as "file"
+  
+      try {
+        const response = await axios.post(`http://localhost:3000/api/v1/sellers/${sellerId}/products/import`, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+        console.log(response.data);
+        // setAddingProduct(false);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    
+    return (
+      <div className="flex">
+        <StyledDropZone onDrop={setFile} label={label} className="flex-1 flex justify-center h-1 items-center rounded-md bg-inherit border-black border-[1px]"/>
+        {
+          file && (
+            <>
+              <button onClick={bulkAdd}>Submit</button>
+              <button onClick={()=>{setFile(null)}}>Cancel</button>
+            </>
+          )
+        }
+      </div>
+    );
+  };
 
   const handleExport = () => {
     setIsExportClicked(true);
