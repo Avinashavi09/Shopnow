@@ -53,7 +53,16 @@ const DataTable = ({products, setSelectedRows, apiRef}) => {
         initialState={{ pagination: { paginationModel } }}
         pageSizeOptions={[5, 10]}
         rowHeight={60}
-        onRowSelectionModelChange={rows => {setSelectedRows(rows); console.log(rows)}}
+        // onRowSelectionModelChange={rows => {setSelectedRows(rows); console.log(rows)}}
+        onRowSelectionModelChange={(rowIds) => {
+          const selectedRowsWithNames = rowIds.map((id) => {
+            const product = products.find((prod) => prod.id === id);
+            return [ id, product?.name ]; // Find name by id
+          });
+    
+          setSelectedRows(selectedRowsWithNames); // Store id and name
+          console.log(selectedRowsWithNames); // Log the array with {id, name}
+        }}
         checkboxSelection
         sx={{ border: 0 }}
         processRowUpdate={updateData}

@@ -249,7 +249,7 @@ router.get("/products/category/:categoryId", async (req, res) => {
 });
 
 // API to add a product for a seller
-router.post("/sellers/:sellerId/products", uploadOptions.single("images"),
+router.post("/sellers/:sellerId/products", uploadOptions.single("file"),
   async (req, res) => {
     const { sellerId } = req.params;
     const {
@@ -414,9 +414,17 @@ fs.createReadStream(file.path)
 });
 
 // MODIFY PRODUCT INFO BY SELLER
-router.put('/sellers/:sellerId/products/:productId', async (req, res) => {
+router.put('/sellers/:sellerId/products/:productId', uploadOptions.single("file"), async (req, res) => {
     const { sellerId, productId } = req.params;
     const { sellerPrice, stock } = req.body;
+    // Use req.file to get the uploaded file
+    const file = req.file;
+    // if (!file) return res.status(400).send("No image in the request");
+    let basePath,fileName;
+    if(file){
+      fileName = file.filename; // Multer stores the file in req.file, not req.body
+      basePath = `${req.protocol}://${req.get("host")}/public/uploads/`;
+    }
 
     try {
         const product = await Product.findById(productId);
@@ -432,6 +440,9 @@ router.put('/sellers/:sellerId/products/:productId', async (req, res) => {
         // Update the seller's product details
         sellerProduct.price = sellerPrice || sellerProduct.price;
         sellerProduct.stock = stock || sellerProduct.stock;
+        if(file){
+          sellerProduct.images = `${basePath}${fileName}`;
+        }
 
         await product.save();
         res.status(200).json({ message: 'Product information updated successfully', product });
@@ -440,6 +451,122 @@ router.put('/sellers/:sellerId/products/:productId', async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 });
+
+// BULK ADD IMAGES BY SELLER
+// BULK ADD IMAGES BY SELLER
+router.put('/sellers/:sellerId/bulk-add-images', uploadOptions.array("files", 10), async (req, res) => {
+  const { sellerId } = req.params;
+  const selectedRows = req.body.selectedRows; // Assuming product IDs are passed as selectedRows
+  const files = req.files; // Multer stores uploaded files here
+
+  if (!selectedRows || selectedRows.length === 0) {
+    return res.status(400).json({ message: 'No product data provided.' });
+  }
+
+  if (!files || files.length === 0) {
+    return res.status(400).json({ message: 'No image files uploaded.' });
+  }
+
+  try {
+    // Iterate over each product and update images
+    const updatePromises = selectedRows.map(async (productId, index) => {
+      const file = files[index]; // Match the file with the product ID based on index
+
+      if (!file) {
+        throw new Error(`No image file provided for product with id: ${productId}`);
+      }
+
+      // Construct the image URL
+      const fileName = file.filename;
+      const basePath = `${req.protocol}://${req.get("host")}/public/uploads/`;
+      const imageUrl = `${basePath}${fileName}`;
+
+      // Find the product and update the image
+      const product = await Product.findById(productId);
+      if (!product) {
+        throw new Error(`Product with id ${productId} not found`);
+      }
+
+      // Assuming the product has a sellerProducts array
+      const sellerProduct = product.sellerProducts.find(sp => sp.seller.toString() === sellerId);
+      if (!sellerProduct) {
+        throw new Error(`Seller with id ${sellerId} does not sell this product`);
+      }
+
+      // Update the image URL for the seller's product
+      sellerProduct.images = imageUrl;
+
+      // Save the product
+      await product.save();
+    });
+
+    // Wait for all update promises to complete
+    await Promise.all(updatePromises);
+
+    res.status(200).json({ message: 'Images updated successfully.' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+// router.put('/sellers/:sellerId/bulk-add-images', uploadOptions.array("images", 10), async (req, res) => {
+//   const { sellerId } = req.params;
+//   // const productImages = req.body.productImages; // Assuming this contains [{productId,imageFile},...]
+//   const selectedRows = req.body.selectedRows;
+//   const selectedFiles = req.body.selectedFiles;
+//   console.log(selectedRows)
+  
+//   if (!selectedRows || selectedRows.length === 0) {
+//     return res.status(400).json({ message: 'No product data provided.' });
+//   }
+
+//   try {
+//     // Iterate over each product and update images
+//     const updatePromises = selectedRows.map(async (row, index) => {
+//       const productId = row[0];
+
+//       // Get the corresponding image file from `req.files`
+//       const file = selectedFiles[productId].file;
+//       if (!file) {
+//         throw new Error(`No image file provided for product with id: ${productId}`);
+//       }
+
+//       // Construct the image URL
+//       const fileName = file.filename;
+//       const basePath = `${req.protocol}://${req.get("host")}/public/uploads/`;
+//       const imageUrl = `${basePath}${fileName}`;
+
+//       // Find the product by productId
+//       const product = await Product.findById(productId);
+//       if (!product) {
+//         throw new Error(`Product with id ${productId} not found.`);
+//       }
+
+//       // Check if the seller is associated with this product
+//       const sellerProduct = product.sellerProducts.find(sp => sp.seller.toString() === sellerId);
+//       if (!sellerProduct) {
+//         throw new Error(`Seller does not sell product with id: ${productId}`);
+//       }
+
+//       // Add the image URL to the seller's product
+//       if (!sellerProduct.images) {
+//         sellerProduct.images = []; // Initialize if not present
+//       }
+//       sellerProduct.images.push(imageUrl);
+
+//       // Save the updated product
+//       return product.save();
+//     });
+
+//     // Wait for all updates to complete
+//     await Promise.all(updatePromises);
+
+//     res.status(200).json({ message: 'Images added to products successfully.' });
+//   } catch (error) {
+//     console.error('Error updating product images:', error);
+//     res.status(500).json({ message: 'Server error while updating product images.', error: error.message });
+//   }
+// });
 
 // API TO DELETE A PRODUCT;
 router.delete("/sellers/:sellerId/products/:productId", async (req, res) => {

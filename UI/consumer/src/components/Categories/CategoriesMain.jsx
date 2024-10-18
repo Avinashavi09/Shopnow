@@ -21,7 +21,7 @@ const CategoriesMain = () => {
     return <div>Loading...</div>;
   }
   return (
-    <div className="bg-slate-200 w-full flex gap-16 justify-center py-2">
+    <div className="bg-slate-200 w-full flex flex-wrap gap-16 justify-center py-2">
       <div className="flex flex-col justify-center items-center gap-1 cursor-pointer">
         <img
           src="public/best-deal.png"
