@@ -87,7 +87,7 @@ def load_model_and_predict():
     shap.summary_plot(shap_values, X_test_poly, feature_names=feature_names)
 
 # First, train the model and save it
-train_model()
+# train_model()
 
 # Later, you can load the model and make predictions without retraining
-load_model_and_predict()
+# load_model_and_predict()

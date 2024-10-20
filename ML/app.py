@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import os
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}})
+CORS(app)
 
 # Load the trained model and polynomial features
 with open('trained_model.pkl', 'rb') as model_file:

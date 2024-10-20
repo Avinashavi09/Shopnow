@@ -174,7 +174,7 @@ router.get("/sellers/:sellerId/products", async (req, res) => {
       return {
         id: product._id,
         name: product.name,
-        category: product.category.name, // Assuming category is populated with the 'name'
+        category: product.category ? product.category.name : "NA", // Assuming category is populated with the 'name'
         mrp: product.mrp || "N/A", // Assuming 'mrp' exists or defaults to 'N/A'
         price: sellerProduct ? sellerProduct.price : "N/A",
         stock: sellerProduct ? sellerProduct.stock : "N/A",

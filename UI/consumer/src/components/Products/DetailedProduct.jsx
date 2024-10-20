@@ -93,7 +93,7 @@ const ProductDetail = () => {
         <img
           src={productData && productData.seller && productData.seller.images[0]}
           alt={productData ? productData.name : ''}
-          className="w-full lg:w-1/2 h-80 object-cover rounded-lg shadow-md"
+          className="h-96 rounded-lg shadow-md"
         />
 
         {/* Right Section: Product Info */}

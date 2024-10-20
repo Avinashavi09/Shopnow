@@ -260,7 +260,7 @@ const ActionBar = ({
     setIsModifyingProduct(true);
   };
   return (
-    <>
+    <div className="w-[85vw]">
       <DeleteDialog
         selectedRows={selectedRows}
         open={open}
@@ -321,7 +321,7 @@ const ActionBar = ({
           </button>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

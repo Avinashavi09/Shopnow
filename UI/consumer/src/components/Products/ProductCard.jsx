@@ -6,6 +6,7 @@ const ProductCard = (props) => {
   const token = localStorage.getItem('jwtToken');
   const [isPresent, setIsPresent] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
   if(token){
     const headers = {
       'Authorization': `Bearer ${token}`,
@@ -85,7 +86,6 @@ const ProductCard = (props) => {
     setIsLoading(false)
 
   };
-  const navigate = useNavigate();
   const goToCart = () => {
     navigate('/cart');
   }
@@ -95,7 +95,7 @@ const ProductCard = (props) => {
         <img
           src={props.product.image}
           alt={props.product.name}
-          className="w-full h-32 object-cover rounded"
+          className="w-full rounded"
         />
         <h3 className="text-lg font-semibold mt-2">{props.product.name}</h3>
         <p className="text-gray-600">{props.product.description}</p>

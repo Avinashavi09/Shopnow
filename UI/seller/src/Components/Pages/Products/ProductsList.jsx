@@ -101,7 +101,7 @@ const ProductsList = ({selectedRows, setSelectedRows, isSubmitClicked, apiRef, d
     return <div>{error}</div>;
   }
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-5 w-[85vw]">
       <DataTable products={products} selectedRows={selectedRows} setSelectedRows={setSelectedRows} apiRef={apiRef}/>
     </div>
   );

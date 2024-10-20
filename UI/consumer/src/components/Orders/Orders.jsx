@@ -16,9 +16,9 @@ const Orders = () => {
         return <h1>Loading...</h1>
     }
   return (
-    <section className="py-24 relative">
+    <section className="py-0 pb-5 relative">
     <div className="w-full max-w-7xl mx-auto px-4 md:px-8">
-        <h2 className="font-manrope font-extrabold text-3xl lead-10 text-black mb-9">Order History</h2>
+        {/* <h2 className="font-manrope font-extrabold text-3xl lead-10 text-black mb-9">Order History</h2>
 
         <div className="flex sm:flex-col lg:flex-row sm:items-center justify-between">
             <ul className="flex max-sm:flex-col sm:items-center gap-x-14 gap-y-3">
@@ -58,7 +58,7 @@ const Orders = () => {
                         className="font-semibold px-2 text-sm text-gray-900 outline-0 appearance-none flex flex-row-reverse cursor-pointer w-28 placeholder-gray-900" placeholder="11-01-2023"/>
                 </div>
             </div>
-        </div>
+        </div> */}
         <div className="mt-7 border border-gray-300 pt-9">
             <div className="flex max-md:flex-col items-center justify-between px-3 md:px-11">
                 <div className="data">
@@ -110,7 +110,7 @@ const Orders = () => {
                                 </div>
                                 <div className="flex flex-col justify-center items-start max-sm:items-center">
                                     <p className="font-normal text-lg text-gray-500 leading-8 mb-2 text-left whitespace-nowrap">
-                                        Delivery Expected by</p>
+                                        Ordered Date</p>
                                     <p className="font-semibold text-lg leading-8 text-black text-left whitespace-nowrap">23rd March
                                         2021</p>
                                 </div>

@@ -42,11 +42,13 @@ const ProductCardMain = ({ product }) => {
         <Link as={Link} to={`/product-detail?product_id=${product.id}&seller_id=${product.seller}`}>
         <div className="relative">
           <div className="absolute inset-0 bg-gradient-to-br from-purple-400 to-indigo-600 opacity-75"></div>
-          <img
-            src={product ? product.image : ""}
-            alt="Product Image"
-            className="w-full h-64 object-cover object-center relative z-10"
-          />
+          <div className="flex justify-center">
+            <img
+              src={product ? product.image : ""}
+              alt="Product Image"
+              className="h-64 object-center relative z-10"
+            />
+          </div>
           <div className="absolute top-4 right-4 bg-gray-100 text-xs font-bold px-3 py-2 rounded-full z-20 transform rotate-12">
             NEW
           </div>
@@ -67,7 +69,7 @@ const ProductCardMain = ({ product }) => {
           </Link>
           <div className="">
           <div className="flex items-center justify-between mb-4">
-              <span className="text-2xl font-bold text-indigo-600">
+              <span className="text-xl font-bold text-indigo-600">
                 ₹{product.price ? product.price : "price"}
               </span>
               <div className="flex items-center">

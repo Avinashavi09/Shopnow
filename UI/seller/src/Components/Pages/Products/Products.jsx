@@ -35,7 +35,7 @@ const Products = () => {
         <div className="font-bold font-serif text-2xl px-1">
           <h1>Products</h1>
         </div>
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 w-full">
           <ActionBar
             addingProduct={addingProduct}
             setAddingProduct={setAddingProduct}
