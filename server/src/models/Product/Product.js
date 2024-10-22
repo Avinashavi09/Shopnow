@@ -20,7 +20,7 @@ const productSchema = new mongoose.Schema({
     },
     globalRating: {
         type: Number,
-        default: 0,
+        default: 5,
     },
     numReviews: {
         type: Number,
@@ -28,7 +28,7 @@ const productSchema = new mongoose.Schema({
     },
     sellerProducts: [{ 
         seller: { type: mongoose.Schema.Types.ObjectId, ref: 'Seller' }, // Reference to the seller
-        sellerRating: { type: Number, default: 0 }, // Rating for the product by the specific seller
+        sellerRating: { type: Number, default: 5 }, // Rating for the product by the specific seller
         stock: { type: Number, default: 0 }, // Seller's stock for the product
         purchasePrice: {type: Number},
         price: { type: Number, required: true }, // Seller-specific price for the product

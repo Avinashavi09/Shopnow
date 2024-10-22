@@ -2,6 +2,7 @@ const express = require("express");
 const { Category } = require("../models/Category/Category");
 const { Product } = require("../models/Product/Product");
 const { Seller } = require("../models/Seller/Seller");
+const { Order } = require("../models/Order/Order");
 const csv = require('csv-parser'); // CSV parser library
 const fs = require('fs'); // File system to read files
 const multer = require("multer");
@@ -248,6 +249,99 @@ router.get("/products/category/:categoryId", async (req, res) => {
   }
 });
 
+// API TO GET ALL INFO
+router.get('/products/seller/info', async (req, res) => {
+  try {
+      // Find products that have sellers
+      const products = await Product.find({ sellerProducts: { $exists: true, $not: { $size: 0 } } })
+          .populate('category')
+          .populate('sellerProducts.seller'); // Populate seller details
+
+      if (products.length === 0) {
+          return res.status(404).json({ message: 'No products found' });
+      }
+
+      // Construct response data
+      const productData = products.map(product => {
+          return product.sellerProducts.map(sellerProduct => ({
+              sellerId: sellerProduct.seller._id,
+              productName: product.name,
+              stock: sellerProduct.stock,
+              category: product.category.name, // Assuming category has a name field
+              costPrice: sellerProduct.purchasePrice, // Assuming purchasePrice is the cost price
+              mrp: product.mrp,
+              sellerRating: sellerProduct.sellerRating, // Assuming seller has a rating field
+              totalCustomers: sellerProduct.seller.totalCustomers, // Assuming seller has totalCustomers field
+              salePrice: sellerProduct.price,
+              salesVolume: sellerProduct.salesVolume // Assuming sales volume is present in sellerProduct
+          }));
+      }).flat(); // Flatten the array to get individual records
+
+      res.status(200).json(productData);
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Server error' });
+  }
+});
+router.get('/products/seller/info/main', async (req, res) => {
+  try {
+      // Find products that have sellers
+      const products = await Product.find({ sellerProducts: { $exists: true, $not: { $size: 0 } } })
+          .populate('category')
+          .populate('sellerProducts.seller'); // Populate seller details
+
+      if (products.length === 0) {
+          return res.status(404).json({ message: 'No products found' });
+      }
+
+      // Prepare the product data
+      const productData = await Promise.all(products.map(async (product) => {
+          return await Promise.all(product.sellerProducts.map(async (sellerProduct) => {
+              // Aggregate the orders to calculate totalCustomers and salesVolume
+              const orders = await Order.aggregate([
+                  {
+                      $match: {
+                          product: product._id,
+                          seller: sellerProduct.seller._id
+                      }
+                  },
+                  {
+                      $group: {
+                          _id: null,
+                          totalCustomers: { $addToSet: '$consumer' }, // Unique consumers
+                          salesVolume: { $sum: '$quantity' } // Total quantity sold
+                      }
+                  }
+              ]);
+
+              const totalCustomers = orders.length > 0 ? orders[0].totalCustomers.length : 0;
+              const salesVolume = orders.length > 0 ? orders[0].salesVolume : 0;
+
+              return {
+                  sellerId: sellerProduct.seller._id,
+                  productName: product.name,
+                  category: product.category.name, // Assuming category has a name field
+                  stock: sellerProduct.stock,
+                  costPrice: sellerProduct.purchasePrice, // Assuming purchasePrice is the cost price
+                  mrp: product.mrp,
+                  sellerRating: sellerProduct.sellerRating, // Assuming seller has a rating field
+                  totalCustomers, // Derived from orders aggregation
+                  salePrice: sellerProduct.price,
+                  salesVolume // Derived from orders aggregation
+              };
+          }));
+      }));
+
+      // Flatten the result and return
+      res.status(200).json(productData.flat()); // Flatten to get all products in one array
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
+
 // API to add a product for a seller
 router.post("/sellers/:sellerId/products", uploadOptions.single("file"),
   async (req, res) => {
@@ -284,11 +378,11 @@ router.post("/sellers/:sellerId/products", uploadOptions.single("file"),
         category: category,
         description: description,
         mrp: mrp,
-        purchasePrice: purchasePrice,
         sellerProducts: [
           {
             seller: sellerId,
             price: sellerPrice,
+            purchasePrice: purchasePrice,
             stock: stock,
             images: `${basePath}${fileName}`, // Save the image path
           },
@@ -348,6 +442,7 @@ fs.createReadStream(file.path)
             // If the seller is not found, add the seller to the sellerProducts array
             existingProduct.sellerProducts.push({
               seller: sellerId,
+              purchasePrice: row.purchasePrice,
               price: row.sellerPrice,
               stock: row.stock,
             });
@@ -362,11 +457,11 @@ fs.createReadStream(file.path)
             category: row.category,
             description: row.description,
             mrp: row.mrp,
-            purchasePrice: row.purchasePrice,
             sellerProducts: [
               {
                 seller: sellerId,
                 price: row.sellerPrice,
+                purchasePrice: row.purchasePrice,
                 stock: row.stock,
               },
             ],

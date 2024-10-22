@@ -59,7 +59,7 @@ def shap_graph():
         # response = flask.jsonify({'data': 'hello'})
         # return response
         # Load your dataset
-        df = pd.read_csv('synthetic_ecommerce_dataset.csv')
+        df = pd.read_csv('seller_info.csv')
 
         # Ensure the competitor-related features are created properly
         df['Avg Competitor Price'] = df.groupby('Product Name')['Sale Price'].transform('mean')

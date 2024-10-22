@@ -79,10 +79,10 @@ const MainBody = ({data, setData}) => {
       "MRP": data.mrp, 
       "Seller Rating": 4.5, 
       "Total Customers": 150, 
-      "Avg Competitor Price": 8500, 
-      "Min Competitor Price": 8000, 
-      "Max Competitor Rating": 4.8, 
-      "Competitor Price-Rating Ratio": 1666.66
+      "Avg Competitor Price": 10999, 
+      "Min Competitor Price": 10999, 
+      "Max Competitor Rating": 5, 
+      "Competitor Price-Rating Ratio": 54999.5
   }
   //   const modelData = {
   //     "Cost Price": 500, 

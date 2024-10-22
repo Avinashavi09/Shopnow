@@ -13,7 +13,8 @@ def train_model():
     global poly, model, X_train_poly, X_test_poly, X
 
     # Load your dataset (replace this with your actual data path)
-    df = pd.read_csv('synthetic_ecommerce_dataset.csv')
+    # df = pd.read_csv('synthetic_ecommerce_dataset.csv')
+    df = pd.read_csv('seller_info.csv')
 
     # Step 1: Calculate competitor features
     df['Avg Competitor Price'] = df.groupby('Product Name')['Sale Price'].transform('mean')
